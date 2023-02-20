@@ -16,9 +16,7 @@ set_gomoku_board(Board) :-
     % Demande à l'utilisateur la taille (N), du plateau de jeu composé du grillage N×N:
     get_valid_integer(3, 26, 'Choisissez la taille du jeu: (min: 3, max: 26)', N),
     % Produit le plateau de jeu de dimensions N×N avec des cases vides (v):
-    create_gomoku_board(N, Board),
-    % Affiche le plateau de jeu:
-    display_gomoku_board(Board).
+    create_gomoku_board(N, Board).
 
 % Créer un plateau de jeu vierge de dimensions N×N:
 create_gomoku_board(N, Board) :-
@@ -56,6 +54,24 @@ display_gomoku_board(Board) :-
     ),
     nl.
 
+% Demande au joueur la couleur qu'il veut jouer:
+get_players_color(Color) :-
+    repeat,
+    write('Quelle couleur voulez-vous jouer? (n: noir ●, b: blanc ◯)\nLe pion noir débute la partie.\n'),
+    read_line_to_string(user_input, Input),
+    string_lower(Input, Input_Lower),
+    atom_string(Color, Input_Lower),
+    (
+        member(Color, [b, n]) -> 
+        (
+            b_setval(players_color, Color),
+            true
+        )
+        ;
+        write('Vous devez choisir une couleur entre b et n.\n'),
+        fail
+    ).
+
 % Demande à l'utilisateur d'entrer un un nombre entre Min et Max, inclusivement:
 get_valid_integer(Min, Max, Prompt, Value) :-
     repeat,
@@ -63,7 +79,7 @@ get_valid_integer(Min, Max, Prompt, Value) :-
     nl,
     read_line_to_string(user_input, Input),
     (
-        number_chars(Value, Input), integer(Value), between(Min, Max, Value) ->  true
+        number_chars(Value, Input), integer(Value), between(Min, Max, Value) -> true
         ;
         format('Vous devez choisir une valeur entre ~d et ~d.\n', [Min, Max]),
         fail
@@ -80,7 +96,12 @@ get_valid_cell(N, Row, Col) :-
     Col1 is Code - 64,
     number_chars(Row1, RowChars),
     (
-        integer(Col1), integer(Row1), between(1, N, Col1), between(1, N, Row1) -> ( Col is Col1 - 1, Row is Row1 - 1, true )
+        integer(Col1), integer(Row1), between(1, N, Col1), between(1, N, Row1) ->
+        (
+            Col is Col1 - 1,
+            Row is Row1 - 1,
+            true
+        )
         ;
         write('Vous devez choisir une case valide!\n'),
         fail
@@ -126,37 +147,39 @@ move(Board, Player, NewBoard) :-
         cell_is_empty(Board, R, C) ->
         (
             (
-                Player == n ->
+                b_getval(players_color, Color),
+                Player == Color ->
                 (   % Le joueur choisi la case à jouer:
                     get_empty_cell(Board, Row, Col)
                 )
                 ;
                 (   % L'ordinateur choisi la case à jouer:
                     % (Solution temporaire: La première case vide est choisie par l'ordinateur.)
+                    write('L\'adversaire joue son tour:\n'),
                     Row is R,
                     Col is C
                 )
             ),
             % Met à jour le plateau de jeu:
-            update_board(Board, Row, Col, Player, NewBoard),
-            % Affiche le plateau de jeu:
-            display_gomoku_board(NewBoard)
+            update_board(Board, Row, Col, Player, NewBoard)
         )
         ;
         (
-            write('Le plateau est plein!'),
+            write('Le plateau est plein!\n'),
             fail
         )
     ).
 
 % Établi un tour complet et boucle jusqu'à ce que le jeu termine:
 turn(Board, Player, NewBoard) :-
+    display_gomoku_board(Board),
     move(Board, Player, NewBoard),
     other(Player, NextPlayer),
     turn(NewBoard, NextPlayer, _).
 
 % Démarre le jeu:
 play :-
-    FirstPlayer is n,
+    Firstplayer = n,
     set_gomoku_board(Board),
-    turn(Board, FirstPlayer, NewBoard).
+    get_players_color(Color),
+    turn(Board, Firstplayer, NewBoard).
