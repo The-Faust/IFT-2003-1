@@ -7,6 +7,10 @@ cell_to_char(v, '┼').   % Case vide (v).
 cell_to_char(n, '●').   % Case avec un pion noir (n).
 cell_to_char(b, '◯').   % Case avec un pion blanc (b).
 
+% Prédicat qui permet d'alterner les joeurs:
+other(b, n).
+other(n, b).
+
 % Établi le plateau de jeu selon des paramètres fournis:
 set_gomoku_board(Board) :-
     % Demande à l'utilisateur la taille (N), du plateau de jeu composé du grillage N×N:
@@ -115,24 +119,44 @@ replace(List, Index, NewElem, NewList) :-
     nth0(Index, List, _, Rest),
     nth0(Index, NewList, NewElem, Rest).
 
-% Permet au joueur de jouer son tour:
-players_move(Board, NewBoard) :-
-    get_empty_cell(Board, Row, Col),
-    update_board(Board, Row, Col, n, NewBoard),
-    display_gomoku_board(NewBoard).
+% Permet à un joueur de jouer son tour:
+move(Board, Player, NewBoard) :-
+    (
+        % Vérifie s'il reste un emplacement vide:
+        cell_is_empty(Board, R, C) ->
+        (
+            (
+                Player == n ->
+                (   % Le joueur choisi la case à jouer:
+                    get_empty_cell(Board, Row, Col)
+                )
+                ;
+                (   % L'ordinateur choisi la case à jouer:
+                    % (Solution temporaire: La première case vide est choisie par l'ordinateur.)
+                    Row is R,
+                    Col is C
+                )
+            ),
+            % Met à jour le plateau de jeu:
+            update_board(Board, Row, Col, Player, NewBoard),
+            % Affiche le plateau de jeu:
+            display_gomoku_board(NewBoard)
+        )
+        ;
+        (
+            write('Le plateau est plein!'),
+            fail
+        )
+    ).
 
-% Permet à l'ordinateur de jouer son tour:
-computers_move(Board, NewBoard) :-
-    cell_is_empty(Board, Row, Col) -> (update_board(Board, Row, Col, b, NewBoard), !),
-    display_gomoku_board(NewBoard).
-
-% Établi un tour complet et boucle jusqu'à ce que le jeu termine.
-turn(Board, NewBoard) :-
-    players_move(Board, Temp),
-    computers_move(Temp, NewBoard),
-    turn(NewBoard, _).
+% Établi un tour complet et boucle jusqu'à ce que le jeu termine:
+turn(Board, Player, NewBoard) :-
+    move(Board, Player, NewBoard),
+    other(Player, NextPlayer),
+    turn(NewBoard, NextPlayer, _).
 
 % Démarre le jeu:
 play :-
+    FirstPlayer is n,
     set_gomoku_board(Board),
-    turn(Board, NewBoard).
+    turn(Board, FirstPlayer, NewBoard).
