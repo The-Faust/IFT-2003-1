@@ -49,7 +49,8 @@ display_gomoku_board(Board) :-
             maplist([C]>>(cell_to_char(C, Char), format('─~w', [Char])), Row),
             write('─\n')
         )
-    ).
+    ),
+    nl.
 
 % Demande à l'utilisateur d'entrer un un nombre entre Min et Max, inclusivement:
 get_valid_integer(Min, Max, Prompt, Value) :-
@@ -60,7 +61,7 @@ get_valid_integer(Min, Max, Prompt, Value) :-
     (
         number_chars(Value, Input), integer(Value), between(Min, Max, Value) ->  true
         ;
-        format('Erreur: Vous devez choisir une valeur entre ~d et ~d.\n', [Min, Max]),
+        format('Vous devez choisir une valeur entre ~d et ~d.\n', [Min, Max]),
         fail
     ).
 
@@ -72,12 +73,24 @@ get_valid_cell(N, Row, Col) :-
     string_upper(Input, Input_Upper),
     string_chars(Input_Upper, [ColChar|RowChars]),
     char_code(ColChar, Code),
-    Col is Code - 64,
-    number_chars(Row, RowChars),
+    Col1 is Code - 64,
+    number_chars(Row1, RowChars),
     (
-        integer(Col), integer(Row), between(1, N, Col), between(1, N, Row) ->  true
+        integer(Col1), integer(Row1), between(1, N, Col1), between(1, N, Row1) -> ( Col is Col1 - 1, Row is Row1 - 1, true )
         ;
-        write('Erreur: Vous devez choisir une case valide (ex. A1).\n'),
+        write('Vous devez choisir une case valide!\n'),
+        fail
+    ).
+
+% Demande à l'utilisateur de choisir une case du plateau qui est vide:
+get_empty_cell(Board, Row, Col) :-
+    length(Board, N),
+    repeat,
+    get_valid_cell(N, Row, Col),
+    (
+        cell_is_empty(Board, Row, Col) -> true
+        ;
+        write('Vous devez choisir une case qui est vide!\n'),
         fail
     ).
 
@@ -90,5 +103,36 @@ cell_content(Board, Row, Col, Content) :-
 cell_is_empty(Board, Row, Col) :-
     cell_content(Board, Row, Col, Content),
     Content == v.
-    
-    
+
+% Met à jour une case du plateau:
+update_board(Board, Row, Col, Player, NewBoard) :-
+    nth0(Row, Board, OldRow),
+    replace(OldRow, Col, Player, NewRow),
+    replace(Board, Row, NewRow, NewBoard).
+
+% Prédicat utilitaire pour remplacer le contenu d'une case:
+replace(List, Index, NewElem, NewList) :-
+    nth0(Index, List, _, Rest),
+    nth0(Index, NewList, NewElem, Rest).
+
+% Permet au joueur de jouer son tour:
+players_move(Board, NewBoard) :-
+    get_empty_cell(Board, Row, Col),
+    update_board(Board, Row, Col, n, NewBoard),
+    display_gomoku_board(NewBoard).
+
+% Permet à l'ordinateur de jouer son tour:
+computers_move(Board, NewBoard) :-
+    cell_is_empty(Board, Row, Col) -> (update_board(Board, Row, Col, b, NewBoard), !),
+    display_gomoku_board(NewBoard).
+
+% Établi un tour complet et boucle jusqu'à ce que le jeu termine.
+turn(Board, NewBoard) :-
+    players_move(Board, Temp),
+    computers_move(Temp, NewBoard),
+    turn(NewBoard, _).
+
+% Démarre le jeu:
+play :-
+    set_gomoku_board(Board),
+    turn(Board, NewBoard).
