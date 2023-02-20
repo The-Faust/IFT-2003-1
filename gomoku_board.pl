@@ -51,25 +51,44 @@ display_gomoku_board(Board) :-
         )
     ).
 
-
 % Demande à l'utilisateur d'entrer un un nombre entre Min et Max, inclusivement:
 get_valid_integer(Min, Max, Prompt, Value) :-
     repeat,
     write(Prompt),
     nl,
-    read(Value),
+    read_line_to_string(user_input, Input),
     (
-        integer(Value), between(Min, Max, Value) ->  true
+        number_chars(Value, Input), integer(Value), between(Min, Max, Value) ->  true
         ;
         format('Erreur: Vous devez choisir une valeur entre ~d et ~d.\n', [Min, Max]),
         fail
     ).
 
+% Demande à l'utilisateur de choisir une case du plateau:
+get_valid_cell(N, Row, Col) :-
+    write('Choisissez la case où vous voulez jouer: (ex. A1)\n'),
+    repeat,
+    read_line_to_string(user_input, Input),
+    string_upper(Input, Input_Upper),
+    string_chars(Input_Upper, [ColChar|RowChars]),
+    char_code(ColChar, Code),
+    Col is Code - 64,
+    number_chars(Row, RowChars),
+    (
+        integer(Col), integer(Row), between(1, N, Col), between(1, N, Row) ->  true
+        ;
+        write('Erreur: Vous devez choisir une case valide (ex. A1).\n'),
+        fail
+    ).
+
+% Extrait le contenu d'une case du plateau:
 cell_content(Board, Row, Col, Content) :-
     nth0(Row, Board, RowList),
     nth0(Col, RowList, Content).
-    
+
+% Vérifie si la case est vide:
 cell_is_empty(Board, Row, Col) :-
     cell_content(Board, Row, Col, Content),
     Content == v.
+    
     
