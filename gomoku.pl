@@ -56,17 +56,19 @@ move(Board, Player, NewBoard, Length) :-
 	).
 
 % Établi un tour complet et boucle jusqu'à ce que le jeu termine:
-turn(Board, Player, NewBoard) :-
-	Length = 3, % Nombre de pions devant être alignés pour gagner.
+turn(Board, Player, NewBoard, Length) :-
 	display_gomoku_board(Board),
 	move(Board, Player, NewBoard, Length),
-	not(win(NewBoard, Player, 3)),
+	not(win(NewBoard, Player, Length)),
 	other(Player, NextPlayer),
-	turn(NewBoard, NextPlayer, _).
+	turn(NewBoard, NextPlayer, _, Length).
 
 % Démarre le jeu:
 play :-
 	Firstplayer = n,
 	set_gomoku_board(Board),
+	length(Board, N),
+	format(atom(Prompt), 'Choisissez l\'objectif, soit le nombre de jetons à aligner: (min: 3, max: ~d)', N),
+	request_valid_integer(3, N, Prompt, Length),
 	request_players_color,
-	turn(Board, Firstplayer, _).
+	turn(Board, Firstplayer, _, Length).
