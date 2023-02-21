@@ -2,6 +2,12 @@
 %
 % Pour établir un plateau de jeu: set_gomoku_board(_).
 
+:- use_module(library(clpfd)).
+
+% Identifiants du joueur:
+players_name(n, 'noir').    % Joueur noir (n).
+players_name(b, 'blanc').   % Joueur blanc (b).
+
 % Identifiants du contenu d'une case:
 cell_to_char(v, '┼').   % Case vide (v).
 cell_to_char(n, '●').   % Case avec un pion noir (n).
@@ -55,7 +61,7 @@ display_gomoku_board(Board) :-
     nl.
 
 % Demande au joueur la couleur qu'il veut jouer:
-get_players_color(Color) :-
+get_players_color :-
     repeat,
     write('Quelle couleur voulez-vous jouer? (n: noir ●, b: blanc ◯)\nLe pion noir débute la partie.\n'),
     read_line_to_string(user_input, Input),
@@ -86,7 +92,7 @@ get_valid_integer(Min, Max, Prompt, Value) :-
     ).
 
 % Demande à l'utilisateur de choisir une case du plateau:
-get_valid_cell(N, Row, Col) :-
+request_cell_coordinates(N, Row, Col) :-
     write('Choisissez la case où vous voulez jouer: (ex. A1)\n'),
     repeat,
     read_line_to_string(user_input, Input),
@@ -111,7 +117,7 @@ get_valid_cell(N, Row, Col) :-
 get_empty_cell(Board, Row, Col) :-
     length(Board, N),
     repeat,
-    get_valid_cell(N, Row, Col),
+    request_cell_coordinates(N, Row, Col),
     (
         cell_is_empty(Board, Row, Col) -> true
         ;
@@ -120,13 +126,13 @@ get_empty_cell(Board, Row, Col) :-
     ).
 
 % Extrait le contenu d'une case du plateau:
-cell_content(Board, Row, Col, Content) :-
+get_cell_content(Board, Row, Col, Content) :-
     nth0(Row, Board, RowList),
     nth0(Col, RowList, Content).
 
 % Vérifie si la case est vide:
 cell_is_empty(Board, Row, Col) :-
-    cell_content(Board, Row, Col, Content),
+    get_cell_content(Board, Row, Col, Content),
     Content == v.
 
 % Met à jour une case du plateau:
@@ -174,6 +180,7 @@ move(Board, Player, NewBoard) :-
 turn(Board, Player, NewBoard) :-
     display_gomoku_board(Board),
     move(Board, Player, NewBoard),
+    not(win(NewBoard, Player, 3)),
     other(Player, NextPlayer),
     turn(NewBoard, NextPlayer, _).
 
@@ -181,5 +188,33 @@ turn(Board, Player, NewBoard) :-
 play :-
     Firstplayer = n,
     set_gomoku_board(Board),
-    get_players_color(Color),
-    turn(Board, Firstplayer, NewBoard).
+    get_players_color,
+    turn(Board, Firstplayer, _).
+
+% Vérifie s'il y a un joueur a aligné suffisament de jetons:
+win(Board, Player, Length) :-
+    (
+        row_win(Board, Player, Length)
+    ;
+        column_win(Board, Player, Length)
+%   ;
+%       diagonal_win(Board, Player, Length)
+    )
+    ->
+    (
+        players_name(Player, PlayersName),
+        display_gomoku_board(Board),
+        format('Le joueur ~w gagne!\n', [PlayersName]),
+        halt
+    ).
+
+% Vérifie s'il y a un joueur a aligné suffisament de jetons horizontalement:
+row_win(Board, Player, Length) :-
+    findall(Player, between(1, Length, _), Sequence),
+    Sequence = [_|_],
+    call_nth((nth1(_, Board, Row), append(_, Zs, Row), append(Sequence, _, Zs)), 1).
+
+% Vérifie s'il y a un joueur a aligné suffisament de jetons verticalement:
+column_win(Board, Player, Length) :-
+    transpose(Board, TransposedBoard),
+    row_win(TransposedBoard, Player, Length).
