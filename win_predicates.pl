@@ -4,7 +4,6 @@
 % remis par
 %   Omar Akrout    (NI: 111 165 246)
 %   René Chenard   (NI: 111 232 277)
-% et
 %   Vincent Martel (NI: 111 105 797)
 %
 % dans le cadre du cours
@@ -48,8 +47,6 @@ column_win(Board, Player, Length) :-
     
 % Vérifie s'il y a un joueur a aligné suffisament de jetons diagonalement:
 diagonal_win(Board, Player, Length) :-
-    length(Board, N),
-    N_1 is N - 1,
     (
         diagonal_win_helper(Board, Player, Length, 1)
         ;

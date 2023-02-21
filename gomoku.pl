@@ -4,7 +4,6 @@
 % remis par
 %   Omar Akrout    (NI: 111 165 246)
 %   René Chenard   (NI: 111 232 277)
-% et
 %   Vincent Martel (NI: 111 105 797)
 %
 % dans le cadre du cours
@@ -18,6 +17,7 @@
 :- [board].
 :- [interface].
 :- [win_predicates].
+:- [agent].
 
 % Identifiants du joueur:
 players_name(n, 'noir').    % Joueur noir (n).
@@ -30,7 +30,7 @@ other(n, b).
 % Permet à un joueur de jouer son tour:
 move(Board, Player, NewBoard, Length) :-
 	(   % Vérifie s'il reste un emplacement vide:
-		cell_is_empty(Board, R, C) ->
+		cell_is_empty(Board, _, _) ->
 		(
 			(   % Vérifie à qui le tour appartient:
 				b_getval(players_color, Color),
@@ -40,10 +40,8 @@ move(Board, Player, NewBoard, Length) :-
 				)
 				;
 				(   % L'ordinateur choisi la case à jouer:
-					% (Solution temporaire: La première case vide est choisie par l'ordinateur.)
 					write('L\'adversaire joue son tour:\n'),
-					Row is R,
-					Col is C
+					agent(Board, Length, Row, Col)
 				)
 			),
 			% Met à jour le plateau de jeu:
