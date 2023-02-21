@@ -16,6 +16,7 @@
 
 :- [board].
 :- [interface].
+:- [evaluation].
 :- [win_predicates].
 :- [agent].
 
@@ -47,7 +48,10 @@ move(Board, Player, NewBoard, Length) :-
 				)
 			),
 			% Met à jour le plateau de jeu:
-			set_cell_content(Board, Row, Col, Player, NewBoard)
+			set_cell_content(Board, Row, Col, Player, NewBoard),
+			display_gomoku_board(Board),
+			longest_alignment(NewBoard, Player, LongestCount),
+			format('Score du joueur ~w: ~d\n', [PlayersName, LongestCount])
 		)
 		;
 		(
