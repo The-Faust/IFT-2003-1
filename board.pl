@@ -48,6 +48,13 @@ cell_is_empty(Board, Row, Col) :-
     get_cell_content(Board, Row, Col, Content),
     Content == v.
 
+% Vérifie si les coordonnées existent sur le plateau:
+are_valid_coordinates(Board, Row, Col) :-
+    length(Board, N),
+    N_1 is N - 1,
+    between(0, N_1, Col),
+    between(0, N_1, Row).
+
 % Prédicat utilitaire pour remplacer le contenu d'une case:
 replace(List, Index, NewElem, NewList) :-
     nth0(Index, List, _, Rest),
