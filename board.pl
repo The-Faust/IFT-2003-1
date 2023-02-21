@@ -4,7 +4,6 @@
 % remis par
 %   Omar Akrout    (NI: 111 165 246)
 %   René Chenard   (NI: 111 232 277)
-% et
 %   Vincent Martel (NI: 111 105 797)
 %
 % dans le cadre du cours
@@ -59,4 +58,3 @@ are_valid_coordinates(Board, Row, Col) :-
 replace(List, Index, NewElem, NewList) :-
     nth0(Index, List, _, Rest),
     nth0(Index, NewList, NewElem, Rest).
-    
