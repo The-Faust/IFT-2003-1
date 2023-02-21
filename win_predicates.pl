@@ -16,6 +16,7 @@
 %===================================%
 
 :- use_module(library(clpfd)).  % Pour: transpose.
+:- [board].
 
 % Vérifie s'il y a un joueur a aligné suffisament de jetons:
 win(Board, Player, Length) :-
@@ -23,8 +24,8 @@ win(Board, Player, Length) :-
         row_win(Board, Player, Length)
     ;
         column_win(Board, Player, Length)
-%   ;
-%       diagonal_win(Board, Player, Length)
+    ;
+        diagonal_win(Board, Player, Length)
     )
     ->
     (
@@ -45,4 +46,37 @@ column_win(Board, Player, Length) :-
     transpose(Board, TransposedBoard),
     row_win(TransposedBoard, Player, Length).
     
-% diagonal_win(Board, Player, Length) :- À implémenter!
+% Vérifie s'il y a un joueur a aligné suffisament de jetons diagonalement:
+diagonal_win(Board, Player, Length) :-
+    length(Board, N),
+    N_1 is N - 1,
+    (
+        diagonal_win_helper(Board, Player, Length, 1)
+        ;
+        diagonal_win_helper(Board, Player, Length, -1)
+    ).
+
+% Fonction utilitaire pour diagonal_win(Board, Player, Length):
+diagonal_win_helper(Board, Player, Length, Step) :-
+    nth0(R, Board, Row),
+    nth0(C, Row, Cell),
+    (
+        Cell = Player ->
+        diagonal_win_helper_helper(Board, Player, Length, R, C, Step, 1)
+    ).
+
+% Fonction utilitaire pour diagonal_win_helper(Board, Player, Length, Step):
+diagonal_win_helper_helper(Board, Player, Length, R, C, Step, Count) :-
+    R1 is R + Step,
+    C1 is C + 1,
+    get_cell_content(Board, R1, C1, Cell),
+    (Cell = Player -> NewCount is Count + 1 ; NewCount is 0),
+    (
+        NewCount >= Length ->
+        true
+        ;
+        (
+            are_valid_coordinates(Board, R1, C1) ->
+            diagonal_win_helper_helper(Board, Player, Length, R1, C1, Step, NewCount)
+        )
+    ).
