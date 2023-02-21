@@ -18,5 +18,14 @@
 
 % L'agent choisit de jouer dans (Row, Col):
 agent(Board, Length, Row, Col) :-
-	% Solution temporaire: La première case vide est choisie par l'ordinateur.
-	cell_is_empty(Board, Row, Col).
+	(	% Vérifie s'il est possible de gagner sur ce tour:
+		cell_is_empty(Board, Row, Col),
+		b_getval(players_color, Player),
+		other(AI, Player),
+		set_cell_content(Board, Row, Col, AI, NewBoard),
+		win(NewBoard, AI, Length)
+		;
+		% Place un jeton dans un emplacement vide:
+		cell_is_empty(Board, Row, Col)
+	).
+	
