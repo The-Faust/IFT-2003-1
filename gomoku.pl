@@ -63,12 +63,21 @@ turn(Board, Player, NewBoard, Length) :-
 	other(Player, NextPlayer),
 	turn(NewBoard, NextPlayer, _, Length).
 
-% Démarre le jeu:
+% Démarre le jeu avec paramétrage:
 play :-
 	Firstplayer = n,
 	set_gomoku_board(Board),
 	length(Board, N),
 	format(atom(Prompt), 'Choisissez l\'objectif, soit le nombre de jetons à aligner: (min: 3, max: ~d)', N),
 	request_valid_integer(3, N, Prompt, Length),
+	request_players_color,
+	turn(Board, Firstplayer, _, Length).
+
+% Démarre le jeu selon les paramètres typiques:
+gomoku :-
+	Firstplayer = n,
+	N = 19,
+	Length = 5,
+	create_gomoku_board(N, Board),
 	request_players_color,
 	turn(Board, Firstplayer, _, Length).
