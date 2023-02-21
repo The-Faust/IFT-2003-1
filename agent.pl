@@ -28,4 +28,7 @@ agent(Board, Length, Row, Col) :-
 		% Place un jeton dans un emplacement vide:
 		cell_is_empty(Board, Row, Col)
 	).
+
+find_max(Board, Pos).
+find_min(Board, Pos).
 	
