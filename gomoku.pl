@@ -32,6 +32,9 @@ move(Board, Player, NewBoard, Length) :-
 	(   % Vérifie s'il reste un emplacement vide:
 		cell_is_empty(Board, _, _) ->
 		(
+			players_name(Player, PlayersName),
+			cell_to_char(Player, PlayersSymbol),
+			format('Le joueur ~w (~w) joue son tour:\n', [PlayersName, PlayersSymbol]),
 			(   % Vérifie à qui le tour appartient:
 				b_getval(players_color, Color),
 				Player == Color ->
@@ -40,7 +43,6 @@ move(Board, Player, NewBoard, Length) :-
 				)
 				;
 				(   % L'ordinateur choisi la case à jouer:
-					write('L\'adversaire joue son tour:\n'),
 					agent(Board, Length, Row, Col)
 				)
 			),
@@ -81,3 +83,4 @@ gomoku :-
 	create_gomoku_board(N, Board),
 	request_players_color,
 	turn(Board, Firstplayer, _, Length).
+	

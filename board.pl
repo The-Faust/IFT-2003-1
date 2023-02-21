@@ -14,13 +14,6 @@
 %           Gomoku Board.           %
 %===================================%
 
-% Établi le plateau de jeu selon des paramètres fournis:
-set_gomoku_board(Board) :-
-    % Demande à l'utilisateur la taille (N), du plateau de jeu composé du grillage N×N:
-    request_valid_integer(3, 26, 'Choisissez la taille du jeu: (min: 3, max: 26)', N),
-    % Produit le plateau de jeu de dimensions N×N avec des cases vides (v):
-    create_gomoku_board(N, Board).
-
 % Créer un plateau de jeu vierge de dimensions N×N:
 create_gomoku_board(N, Board) :-
     length(Board, N),
