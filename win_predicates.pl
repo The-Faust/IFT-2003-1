@@ -47,8 +47,6 @@ column_win(Board, Player, Length) :-
     
 % Vérifie s'il y a un joueur a aligné suffisament de jetons diagonalement:
 diagonal_win(Board, Player, Length) :-
-    length(Board, N),
-    N_1 is N - 1,
     (
         diagonal_win_helper(Board, Player, Length, 1)
         ;
