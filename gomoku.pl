@@ -63,11 +63,10 @@ turn(Board, Player, NewBoard) :-
 	not(win(NewBoard, Player, 3)),
 	other(Player, NextPlayer),
 	turn(NewBoard, NextPlayer, _).
-	
+
 % Démarre le jeu:
 play :-
 	Firstplayer = n,
 	set_gomoku_board(Board),
 	request_players_color,
 	turn(Board, Firstplayer, _).
-	

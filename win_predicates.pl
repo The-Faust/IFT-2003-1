@@ -44,7 +44,7 @@ row_win(Board, Player, Length) :-
 column_win(Board, Player, Length) :-
     transpose(Board, TransposedBoard),
     row_win(TransposedBoard, Player, Length).
-    
+
 % Vérifie s'il y a un joueur a aligné suffisament de jetons diagonalement:
 diagonal_win(Board, Player, Length) :-
     (
@@ -67,7 +67,12 @@ diagonal_win_helper_helper(Board, Player, Length, R, C, Step, Count) :-
     R1 is R + Step,
     C1 is C + 1,
     get_cell_content(Board, R1, C1, Cell),
-    (Cell = Player -> NewCount is Count + 1 ; NewCount is 0),
+    (
+        Cell = Player ->
+        NewCount is Count + 1
+        ;
+        NewCount is 0
+    ),
     (
         NewCount >= Length ->
         true

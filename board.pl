@@ -58,4 +58,3 @@ are_valid_coordinates(Board, Row, Col) :-
 replace(List, Index, NewElem, NewList) :-
     nth0(Index, List, _, Rest),
     nth0(Index, NewList, NewElem, Rest).
-    
