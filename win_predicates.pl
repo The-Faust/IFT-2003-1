@@ -4,7 +4,6 @@
 % remis par
 %   Omar Akrout    (NI: 111 165 246)
 %   René Chenard   (NI: 111 232 277)
-% et
 %   Vincent Martel (NI: 111 105 797)
 %
 % dans le cadre du cours
