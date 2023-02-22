@@ -33,9 +33,6 @@ move(Board, Player, NewBoard, Length) :-
 	(   % Vérifie s'il reste un emplacement vide:
 		cell_is_empty(Board, _, _) ->
 		(
-			players_name(Player, PlayersName),
-			cell_to_char(Player, PlayersSymbol),
-			format('Le joueur ~w (~w) joue son tour:\n', [PlayersName, PlayersSymbol]),
 			(   % Vérifie à qui le tour appartient:
 				b_getval(players_color, Color),
 				Player == Color ->
@@ -48,10 +45,7 @@ move(Board, Player, NewBoard, Length) :-
 				)
 			),
 			% Met à jour le plateau de jeu:
-			set_cell_content(Board, Row, Col, Player, NewBoard),
-			display_gomoku_board(Board),
-			longest_alignment(NewBoard, Player, LongestCount),
-			format('Score du joueur ~w: ~d\n', [PlayersName, LongestCount])
+			set_cell_content(Board, Row, Col, Player, NewBoard)
 		)
 		;
 		(
@@ -63,9 +57,24 @@ move(Board, Player, NewBoard, Length) :-
 
 % Établi un tour complet et boucle jusqu'à ce que le jeu termine:
 turn(Board, Player, NewBoard, Length) :-
-	display_gomoku_board(Board),
+	draw_line,
+	players_name(Player, PlayersName),
+	cell_to_char(Player, PlayersSymbol),
+	format('Le joueur ~w (~w) joue son tour:\n', [PlayersName, PlayersSymbol]),
 	move(Board, Player, NewBoard, Length),
-	not(win(NewBoard, Player, Length)),
+	display_gomoku_board(NewBoard),
+	longest_alignment(NewBoard, Player, LongestCount),
+	format('Score du joueur ~w (~w): ~d\n', [PlayersName, PlayersSymbol, LongestCount]),
+	(
+		win(NewBoard, Player, Length) ->
+		(
+			draw_line,
+			format('Le joueur ~w (~w) gagne!\n', [PlayersName, PlayersSymbol]),
+			halt
+		)
+		;
+		true
+	),
 	other(Player, NextPlayer),
 	turn(NewBoard, NextPlayer, _, Length).
 
@@ -74,17 +83,33 @@ play :-
 	Firstplayer = n,
 	set_gomoku_board(Board),
 	length(Board, N),
-	format(atom(Prompt), 'Choisissez l\'objectif, soit le nombre de jetons à aligner: (min: 3, max: ~d)', N),
-	request_valid_integer(3, N, Prompt, Length),
+	(
+		N > 3 ->
+		format(atom(Prompt), 'Choisissez l\'objectif, soit le nombre de jetons à aligner: (min: 3, max: ~d)', N),
+		request_valid_integer(3, N, Prompt, Length)
+		;
+		Length is 3
+	),
 	request_players_color,
+	display_gomoku_board(Board),
 	turn(Board, Firstplayer, _, Length).
 
 % Démarre le jeu selon les paramètres typiques:
 gomoku :-
 	Firstplayer = n,
-	N = 19,
-	Length = 5,
+	N is 19,
+	Length is 5,
 	create_gomoku_board(N, Board),
 	request_players_color,
+	display_gomoku_board(Board),
 	turn(Board, Firstplayer, _, Length).
-	
+
+% Implémentation de tictactoe (bonus):
+tictactoe :-
+	Firstplayer = n,
+	N is 3,
+	Length is 3,
+	create_gomoku_board(N, Board),
+	request_players_color,
+	display_gomoku_board(Board),
+	turn(Board, Firstplayer, _, Length).

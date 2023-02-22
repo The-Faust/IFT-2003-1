@@ -25,13 +25,6 @@ win(Board, Player, Length) :-
         column_win(Board, Player, Length)
     ;
         diagonal_win(Board, Player, Length)
-    )
-    ->
-    (
-        players_name(Player, PlayersName),
-        display_gomoku_board(Board),
-        format('Le joueur ~w gagne!\n', [PlayersName]),
-        halt
     ).
 
 % Vérifie s'il y a un joueur a aligné suffisament de jetons horizontalement:

@@ -112,3 +112,7 @@ request_next_move(Board, Row, Col) :-
 		write('Vous devez choisir une case qui est vide!\n'),
 		fail
 	).
+
+% Affiche une ligne de séparation:
+draw_line :-
+	write('────────────────────────────────────────────────────────────────────\n').
