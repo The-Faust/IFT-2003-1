@@ -17,33 +17,35 @@
 % Évalue la l'alignement de jetons le plus long pour un joueur:
 longest_alignment(Board, Player, LongestCount) :-
 	Directions = [[0,1], [1,0], [1,1], [1,-1]],
-	findall(AlignmentLength, (
-		member(Direction, Directions),
-		check_direction(Board, Player, Direction, AlignmentLength)
-	), AlignmentLengths),
+	findall(AlignmentLength,
+		(
+			member(Direction, Directions),
+			check_direction(Board, Player, Direction, AlignmentLength)
+		),
+		AlignmentLengths
+	),
 	max_list(AlignmentLengths, LongestCount).
 
 % Évalue la l'alignement de jetons dans la direction donnée:
 check_direction(Board, Player, Direction, LongestCount) :-
-	findall(AlignmentLength, (
-		nth0(R, Board, Row),
-		nth0(C, Row, Cell),
-		(
-			Cell = Player ->
-			check_direction_helper(Board, Player, R, C, Direction, AlignmentLength)
-		)
-	), AlignmentLengths),
-	max_list(AlignmentLengths, LongestCount).
-
-% Fonction utilitaire pour check_direction(Board, Player, Direction, LongestCount):
-check_direction_helper(Board, Player, R, C, Direction, LongestCount) :-
-	nth0(0, Direction, StepR),
-	nth0(1, Direction, StepC),
-	get_cell_content(Board, R, C, Cell),
-	Cell = Player ->
-	longest_alignment_helper(Board, Player, R, C, StepR, StepC, 1, 1, LongestCount)
-	;
-	LongestCount is 0.
+	(
+		nth0(0, Direction, StepR),
+		nth0(1, Direction, StepC),
+		findall(AlignmentLength,
+			(
+				nth0(R, Board, Row),
+				nth0(C, Row, Cell),
+				(
+					Cell = Player ->
+					longest_alignment_helper(Board, Player, R, C, StepR, StepC, 1, 1, AlignmentLength)
+				;
+					AlignmentLength = 0
+				)
+			),
+			AlignmentLengths
+		),
+		max_list(AlignmentLengths, LongestCount)
+	).
 
 % Fonction utilitaire pour check_direction_helper(Board, Player, R, C, Direction, LongestCount):
 longest_alignment_helper(Board, Player, R, C, StepR, StepC, ActualCount, PreviousLongestCount, LongestCount) :-
@@ -70,3 +72,4 @@ longest_alignment_helper(Board, Player, R, C, StepR, StepC, ActualCount, Previou
 	longest_alignment_helper(Board, Player, R1, C1, StepR, StepC, NewCount, NewLongestCount, LongestCount)
 	;
 	LongestCount is PreviousLongestCount.
+	
