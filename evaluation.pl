@@ -51,9 +51,9 @@ check_direction(Board, Player, Direction, BestScore) :-
 evaluate_score_helper(Board, Player, R, C, StepR, StepC, ActualScore, PreviousBestScore, BestScore) :-
 	R1 is R + StepR,
 	C1 is C + StepC,
-	are_valid_coordinates(Board, R1, C1) ->
+	are_valid_coordinates(Board, R1-C1) ->
 	(
-		get_cell_content(Board, R1, C1, Cell),
+		get_cell_content(Board, R1-C1, Cell),
 		(
 			Cell = Player ->
 			NewScore is ActualScore + 1,

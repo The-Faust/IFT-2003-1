@@ -25,29 +25,48 @@ create_row(N, Row) :-
     maplist(=(v), Row).
 
 % Extrait le contenu d'une case du plateau:
-get_cell_content(Board, Row, Col, Content) :-
+get_cell_content(Board, Row-Col, Content) :-
     nth0(Row, Board, RowList),
     nth0(Col, RowList, Content).
 
 % Met à jour une case du plateau:
-set_cell_content(Board, Row, Col, Content, NewBoard) :-
+set_cell_content(Board, Row-Col, Content, NewBoard) :-
     nth0(Row, Board, OldRow),
     replace(OldRow, Col, Content, NewRow),
     replace(Board, Row, NewRow, NewBoard).
 
 % Vérifie si la case est vide:
-cell_is_empty(Board, Row, Col) :-
-    get_cell_content(Board, Row, Col, Content),
+cell_is_empty(Board, Row-Col) :-
+    get_cell_content(Board, Row-Col, Content),
     Content == v.
 
 % Vérifie si les coordonnées existent sur le plateau:
-are_valid_coordinates(Board, Row, Col) :-
+are_valid_coordinates(Board, Row-Col) :-
+    get_last_index(Board, LastIndex),
+    between(0, LastIndex, Col),
+    between(0, LastIndex, Row).
+    
+% Permet d'établir les cases où il est possible de jouer:
+get_possible_moves(Board, Moves) :-
+    findall(Move, cell_is_empty(Board, Move), Moves).
+
+% Retourne le dernier index du plateau (débute à 0):
+get_last_index(Board, LastIndex) :-
     length(Board, N),
-    N_1 is N - 1,
-    between(0, N_1, Col),
-    between(0, N_1, Row).
+    LastIndex is N - 1.
+    
+% Permet d'obtenir une case vide au hasard:
+get_a_random_move(Board, Move) :-
+    get_last_index(Board, LastIndex),
+    repeat,
+    (
+        random_between(0, LastIndex, Row),
+        random_between(0, LastIndex, Col),
+        cell_is_empty(Board, Move)
+    ).
 
 % Prédicat utilitaire pour remplacer le contenu d'une case:
 replace(List, Index, NewElem, NewList) :-
     nth0(Index, List, _, Rest),
     nth0(Index, NewList, NewElem, Rest).
+    

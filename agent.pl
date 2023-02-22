@@ -14,15 +14,21 @@
 %           Agent intelligent .        %
 %======================================%
 
+% Vérifie s'il est possible pour le joueur de gagner en un tour:
+winning_move(Board, Player, WinningScore, Move) :-
+	cell_is_empty(Board, Move),
+	set_cell_content(Board, Move, Player, NewBoard),
+	evaluate_score(NewBoard, Player, WinningScore).
+
 % L'agent choisit de jouer dans (Row, Col):
-agent(Board, WinningScore, Row, Col) :-
+agent(Board, Player, WinningScore, Move) :-
+	other(Player, OtherPlayer),
 	(	% Vérifie s'il est possible de gagner sur ce tour:
-		cell_is_empty(Board, Row, Col),
-		b_getval(players_color, Player),
-		other(AI, Player),
-		set_cell_content(Board, Row, Col, AI, NewBoard),
-		evaluate_score(NewBoard, AI, WinningScore)
+		winning_move(Board, Player, WinningScore, Move)
 		;
-		% Place un jeton dans un emplacement vide:
-		cell_is_empty(Board, Row, Col)
+		% Vérifie s'il est possible de perdre au prochain tour:
+		winning_move(Board, OtherPlayer, WinningScore, Move)
+		;
+		% Choisi une case vide au hasard:
+		get_a_random_move(Board, Move)
 	).

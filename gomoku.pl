@@ -33,21 +33,21 @@ other(n, b).
 % Permet à un joueur de jouer son tour:
 move(Board, Player, NewBoard, WinningScore) :-
 	(   % Vérifie s'il reste un emplacement vide:
-		cell_is_empty(Board, _, _) ->
+		cell_is_empty(Board, _) ->
 		(
 			(   % Vérifie à qui le tour appartient:
 				b_getval(players_color, Color),
 				Player == Color ->
 				(   % Le joueur choisi la case à jouer:
-					request_next_move(Board, Row, Col)
+					request_next_move(Board, Move)
 				)
 				;
 				(   % L'ordinateur choisi la case à jouer:
-					agent(Board, WinningScore, Row, Col)
+					agent(Board, Player, WinningScore, Move)
 				)
 			),
 			% Met à jour le plateau de jeu:
-			set_cell_content(Board, Row, Col, Player, NewBoard)
+			set_cell_content(Board, Move, Player, NewBoard)
 		)
 		;
 		(
@@ -113,5 +113,25 @@ tictactoe :-
 	WinningScore is 3,
 	create_gomoku_board(N, Board),
 	request_players_color,
+	display_gomoku_board(Board),
+	turn(Board, Firstplayer, _, WinningScore).
+
+% Partie de Gomoku AI vs AI:
+gomoku_auto :-
+	Firstplayer = n,
+	N is 19,
+	WinningScore is 5,
+	create_gomoku_board(N, Board),
+	b_setval(players_color, v),
+	display_gomoku_board(Board),
+	turn(Board, Firstplayer, _, WinningScore).
+
+% Partie de Tic-Tac-Toe AI vs AI:
+tictactoe_auto :-
+	Firstplayer = n,
+	N is 3,
+	WinningScore is 3,
+	create_gomoku_board(N, Board),
+	b_setval(players_color, v),
 	display_gomoku_board(Board),
 	turn(Board, Firstplayer, _, WinningScore).

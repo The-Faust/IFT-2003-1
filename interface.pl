@@ -81,7 +81,7 @@ request_valid_integer(Min, Max, Prompt, Value) :-
 	).
 
 % Demande à l'utilisateur de choisir une case du plateau:
-request_cell_coordinates(Board, Row, Col) :-
+request_cell_coordinates(Board, Row-Col) :-
 	write('Choisissez la case où vous voulez jouer: (ex. A1)\n'),
 	repeat,
 	read_line_to_string(user_input, Input),
@@ -93,7 +93,7 @@ request_cell_coordinates(Board, Row, Col) :-
 			catch(number_chars(Row1, RowChars), _, false),
 			Col is Code - 65,
 			Row is Row1 - 1,
-			are_valid_coordinates(Board, Row, Col) ->
+			are_valid_coordinates(Board, Row-Col) ->
 			true
 			;
 			write('Vous devez choisir une case valide!\n'),
@@ -102,11 +102,11 @@ request_cell_coordinates(Board, Row, Col) :-
 	).
 
 % Demande à l'utilisateur de choisir une case du plateau qui est vide:
-request_next_move(Board, Row, Col) :-
+request_next_move(Board, Move) :-
 	repeat,
-	request_cell_coordinates(Board, Row, Col),
+	request_cell_coordinates(Board, Move),
 	(
-		cell_is_empty(Board, Row, Col) ->
+		cell_is_empty(Board, Move) ->
 		true
 		;
 		write('Vous devez choisir une case qui est vide!\n'),
