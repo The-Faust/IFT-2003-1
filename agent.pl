@@ -10,20 +10,18 @@
 %   IFT-2003 - Intelligence artificielle I
 %   Hiver 2023
 
-%===================================%
-%         Agent intelligent.        %
-%===================================%
-
-:- [board].
+%======================================%
+%           Agent intelligent .        %
+%======================================%
 
 % L'agent choisit de jouer dans (Row, Col):
-agent(Board, Length, Row, Col) :-
+agent(Board, WinningScore, Row, Col) :-
 	(	% Vérifie s'il est possible de gagner sur ce tour:
 		cell_is_empty(Board, Row, Col),
 		b_getval(players_color, Player),
 		other(AI, Player),
 		set_cell_content(Board, Row, Col, AI, NewBoard),
-		win(NewBoard, AI, Length)
+		evaluate_score(NewBoard, AI, WinningScore)
 		;
 		% Place un jeton dans un emplacement vide:
 		cell_is_empty(Board, Row, Col)

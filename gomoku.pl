@@ -10,14 +10,16 @@
 %   IFT-2003 - Intelligence artificielle I
 %   Hiver 2023
 
-%===================================%
-%   Initialiser le jeu: ?- play.    %
-%===================================%
+%======================================%
+%  Options:                            %
+%  -Initialiser le jeu:  ?- gomoku.    %
+%  -Avec paramétrage:    ?- play.      %
+%  -Tic-Tac-Toe (bonus): ?- tictactoe. %
+%======================================%
 
 :- [board].
 :- [interface].
 :- [evaluation].
-:- [win_predicates].
 :- [agent].
 
 % Identifiants du joueur:
@@ -29,7 +31,7 @@ other(b, n).
 other(n, b).
 
 % Permet à un joueur de jouer son tour:
-move(Board, Player, NewBoard, Length) :-
+move(Board, Player, NewBoard, WinningScore) :-
 	(   % Vérifie s'il reste un emplacement vide:
 		cell_is_empty(Board, _, _) ->
 		(
@@ -41,7 +43,7 @@ move(Board, Player, NewBoard, Length) :-
 				)
 				;
 				(   % L'ordinateur choisi la case à jouer:
-					agent(Board, Length, Row, Col)
+					agent(Board, WinningScore, Row, Col)
 				)
 			),
 			% Met à jour le plateau de jeu:
@@ -56,17 +58,17 @@ move(Board, Player, NewBoard, Length) :-
 	).
 
 % Établi un tour complet et boucle jusqu'à ce que le jeu termine:
-turn(Board, Player, NewBoard, Length) :-
+turn(Board, Player, NewBoard, WinningScore) :-
 	draw_line,
 	players_name(Player, PlayersName),
 	cell_to_char(Player, PlayersSymbol),
 	format('Le joueur ~w (~w) joue son tour:\n', [PlayersName, PlayersSymbol]),
-	move(Board, Player, NewBoard, Length),
+	move(Board, Player, NewBoard, WinningScore),
 	display_gomoku_board(NewBoard),
-	longest_alignment(NewBoard, Player, LongestCount),
-	format('Score du joueur ~w (~w): ~d\n', [PlayersName, PlayersSymbol, LongestCount]),
+	evaluate_score(NewBoard, Player, Score),
+	format('Score du joueur ~w (~w): ~d\n', [PlayersName, PlayersSymbol, Score]),
 	(
-		win(NewBoard, Player, Length) ->
+		evaluate_score(NewBoard, Player, WinningScore)  ->
 		(
 			draw_line,
 			format('Le joueur ~w (~w) gagne!\n', [PlayersName, PlayersSymbol]),
@@ -76,7 +78,7 @@ turn(Board, Player, NewBoard, Length) :-
 		true
 	),
 	other(Player, NextPlayer),
-	turn(NewBoard, NextPlayer, _, Length).
+	turn(NewBoard, NextPlayer, _, WinningScore).
 
 % Démarre le jeu avec paramétrage:
 play :-
@@ -86,30 +88,30 @@ play :-
 	(
 		N > 3 ->
 		format(atom(Prompt), 'Choisissez l\'objectif, soit le nombre de jetons à aligner: (min: 3, max: ~d)', N),
-		request_valid_integer(3, N, Prompt, Length)
+		request_valid_integer(3, N, Prompt, WinningScore)
 		;
-		Length is 3
+		WinningScore is 3
 	),
 	request_players_color,
 	display_gomoku_board(Board),
-	turn(Board, Firstplayer, _, Length).
+	turn(Board, Firstplayer, _, WinningScore).
 
 % Démarre le jeu selon les paramètres typiques:
 gomoku :-
 	Firstplayer = n,
 	N is 19,
-	Length is 5,
+	WinningScore is 5,
 	create_gomoku_board(N, Board),
 	request_players_color,
 	display_gomoku_board(Board),
-	turn(Board, Firstplayer, _, Length).
+	turn(Board, Firstplayer, _, WinningScore).
 
-% Implémentation de tictactoe (bonus):
+% Implémentation de Tic-Tac-Toe (bonus):
 tictactoe :-
 	Firstplayer = n,
 	N is 3,
-	Length is 3,
+	WinningScore is 3,
 	create_gomoku_board(N, Board),
 	request_players_color,
 	display_gomoku_board(Board),
-	turn(Board, Firstplayer, _, Length).
+	turn(Board, Firstplayer, _, WinningScore).

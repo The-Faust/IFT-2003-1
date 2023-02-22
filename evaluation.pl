@@ -10,45 +10,45 @@
 %   IFT-2003 - Intelligence artificielle I
 %   Hiver 2023
 
-%===================================%
-%     Utilitaires d'évaluation.     %
-%===================================%
+%======================================%
+%         Évaluation du score.         %
+%======================================%
 
-% Évalue la l'alignement de jetons le plus long pour un joueur:
-longest_alignment(Board, Player, LongestCount) :-
+% Évalue le score d'un joueur, soit l'alignement de jetons le plus long:
+evaluate_score(Board, Player, BestScore) :-
 	Directions = [[0,1], [1,0], [1,1], [1,-1]],
-	findall(AlignmentLength,
+	findall(Score,
 		(
 			member(Direction, Directions),
-			check_direction(Board, Player, Direction, AlignmentLength)
+			check_direction(Board, Player, Direction, Score)
 		),
-		AlignmentLengths
+		Scores
 	),
-	max_list(AlignmentLengths, LongestCount).
+	max_list(Scores, BestScore).
 
-% Évalue la l'alignement de jetons dans la direction donnée:
-check_direction(Board, Player, Direction, LongestCount) :-
+% Évalue le meilleur score dans la direction donnée:
+check_direction(Board, Player, Direction, BestScore) :-
 	(
 		nth0(0, Direction, StepR),
 		nth0(1, Direction, StepC),
-		findall(AlignmentLength,
+		findall(Score,
 			(
 				nth0(R, Board, Row),
 				nth0(C, Row, Cell),
 				(
 					Cell = Player ->
-					longest_alignment_helper(Board, Player, R, C, StepR, StepC, 1, 1, AlignmentLength)
+					evaluate_score_helper(Board, Player, R, C, StepR, StepC, 1, 1, Score)
 				;
-					AlignmentLength = 0
+					Score is 0
 				)
 			),
-			AlignmentLengths
+			Scores
 		),
-		max_list(AlignmentLengths, LongestCount)
+		max_list(Scores, BestScore)
 	).
 
-% Fonction utilitaire pour check_direction_helper(Board, Player, R, C, Direction, LongestCount):
-longest_alignment_helper(Board, Player, R, C, StepR, StepC, ActualCount, PreviousLongestCount, LongestCount) :-
+% Fonction utilitaire pour check_direction(Board, Player, Direction, BestScore):
+evaluate_score_helper(Board, Player, R, C, StepR, StepC, ActualScore, PreviousBestScore, BestScore) :-
 	R1 is R + StepR,
 	C1 is C + StepC,
 	are_valid_coordinates(Board, R1, C1) ->
@@ -56,20 +56,19 @@ longest_alignment_helper(Board, Player, R, C, StepR, StepC, ActualCount, Previou
 		get_cell_content(Board, R1, C1, Cell),
 		(
 			Cell = Player ->
-			NewCount is ActualCount + 1,
+			NewScore is ActualScore + 1,
 			(
-				PreviousLongestCount < NewCount -> 
-				NewLongestCount is NewCount
+				PreviousBestScore < NewScore ->
+				NewBestScore is NewScore
 				;
-				NewLongestCount is PreviousLongestCount
+				NewBestScore is PreviousBestScore
 			),
-			NewLongestCount is NewCount
+			NewBestScore is NewScore
 			;
-			NewCount is 0,
-			NewLongestCount is PreviousLongestCount
+			NewScore is 0,
+			NewBestScore is PreviousBestScore
 		)
 	),
-	longest_alignment_helper(Board, Player, R1, C1, StepR, StepC, NewCount, NewLongestCount, LongestCount)
+	evaluate_score_helper(Board, Player, R1, C1, StepR, StepC, NewScore, NewBestScore, BestScore)
 	;
-	LongestCount is PreviousLongestCount.
-	
+	BestScore is PreviousBestScore.

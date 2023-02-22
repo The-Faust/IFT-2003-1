@@ -10,9 +10,9 @@
 %   IFT-2003 - Intelligence artificielle I
 %   Hiver 2023
 
-%===================================%
-%             Interface.            %
-%===================================%
+%======================================%
+%               Interface.             %
+%======================================%
 
 % Identifiants du contenu d'une case:
 cell_to_char(v, '┼').   % Case vide (v).
