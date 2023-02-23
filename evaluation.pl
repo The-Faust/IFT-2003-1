@@ -14,22 +14,28 @@
 %         Évaluation du score.         %
 %======================================%
 
+:- dynamic memo_score/3.
+
+% Récupère l'alignement de jetons le plus long mémoisé pour un joueur:
+evaluate_score(Board, Player, BestScore) :-
+	memo_score(Board, Player, BestScore),
+	!.
+
 % Évalue le score d'un joueur, soit l'alignement de jetons le plus long:
 evaluate_score(Board, Player, BestScore) :-
 	setof(Score,
 			(StepR, StepC)^(member((StepR, StepC), [(0, 1), (1, 0), (1, 1), (1, -1)]),
 							check_direction(Board, Player, StepR-StepC, Score)),
 			Scores),
-	max_list(Scores, BestScore).
+	max_list(Scores, BestScore),
+	assertz(memo_score(Board, Player, BestScore)).
 
 % Évalue le meilleur score dans la direction donnée:
 check_direction(Board, Player, Direction, BestScore) :-
 	setof(StreakScore,
 		NextMove^(
 			get_cell_content(Board, NextMove, Player),
-			(
-				evaluate_score_helper(Board, Player, NextMove, Direction, 1, 1, StreakScore)
-			)
+			evaluate_score_helper(Board, Player, NextMove, Direction, 1, 1, StreakScore)
 			;
 			StreakScore is 0
 		),
@@ -61,4 +67,3 @@ evaluate_score_helper(Board, Player, R-C, StepR-StepC, ActualScore, PreviousBest
 		fail
 	),
 	evaluate_score_helper(Board, Player, R1-C1, StepR-StepC, NewScore, NewBestScore, BestScore).
-	
