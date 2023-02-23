@@ -99,7 +99,7 @@ play :-
 % Démarre le jeu selon les paramètres typiques:
 gomoku :-
 	Firstplayer = n,
-	N is 19,
+	N is 7,
 	Goal is 5,
 	create_gomoku_board(N, Board),
 	request_players_color,
@@ -109,7 +109,7 @@ gomoku :-
 % Partie de Gomoku AI vs AI:
 gomoku_auto :-
 	Firstplayer = n,
-	N is 19,
+	N is 7,
 	Goal is 5,
 	create_gomoku_board(N, Board),
 	b_setval(players_color, v),

@@ -18,7 +18,8 @@
 winning_move(Board, Player, Goal, Move) :-
 	cell_is_empty(Board, Move),
 	set_cell_content(Board, Move, Player, NewBoard),
-	evaluate_score(NewBoard, Player, Goal).
+	evaluate_score(NewBoard, Player, Score),
+	Score >= Goal.
 
 make_move(Board, Player, Move, NewBoard) :-
 	set_cell_content(Board, Move, Player, NewBoard).
@@ -27,12 +28,12 @@ make_move(Board, Player, Move, NewBoard) :-
 agent(Board, Player, Goal, Move) :-
 	other(Player, OtherPlayer),
 	(
-		(	% Moins de deux cases d'occupées, choisi une case vide au hasard:
-			count_occupied_cells(Board, Count),
-			Count < 2,
-			get_a_random_move(Board, Move)
-		)
-		;
+%		(	% Moins de deux cases d'occupées, choisi une case vide au hasard:
+%			count_occupied_cells(Board, Count),
+%			Count < 2,
+%			get_a_random_move(Board, Move)
+%		)
+%		;
 		% Vérifie s'il est possible de gagner sur ce tour:
 		winning_move(Board, Player, Goal, Move)
 		;
@@ -40,7 +41,7 @@ agent(Board, Player, Goal, Move) :-
 		winning_move(Board, OtherPlayer, Goal, Move)
 		;
 		% Minimax:
-		MaxDepth is 2,
+		MaxDepth is 1,
 		minimax(Board, Player, Goal, MaxDepth, Move)
 	).
 
