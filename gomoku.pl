@@ -68,7 +68,7 @@ turn(Board, Player, NewBoard, Goal) :-
 	evaluate_score(NewBoard, Player, Score),
 	format('Score du joueur ~w (~w): ~d\n', [PlayersName, PlayersSymbol, Score]),
 	(
-		evaluate_score(NewBoard, Player, Goal)  ->
+		Score >= Goal ->
 		(
 			draw_line,
 			format('Le joueur ~w (~w) gagne!\n', [PlayersName, PlayersSymbol]),
