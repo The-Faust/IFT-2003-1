@@ -17,9 +17,7 @@
 % Évalue le score d'un joueur, soit l'alignement de jetons le plus long:
 evaluate_score(Board, Player, BestScore) :-
 	setof(Score,
-			(StepR, StepC)^(between(-1, 1, StepR),
-							between(-1, 1, StepC),
-							(StepR =\= 0 ; StepC =\= 0),
+			(StepR, StepC)^(member((StepR, StepC), [(0, 1), (1, 0), (1, 1), (1, -1)]),
 							check_direction(Board, Player, StepR-StepC, Score)),
 			Scores),
 	max_list(Scores, BestScore).
@@ -28,13 +26,12 @@ evaluate_score(Board, Player, BestScore) :-
 check_direction(Board, Player, Direction, BestScore) :-
 	setof(StreakScore,
 		NextMove^(
-			get_cell_content(Board, NextMove, Cell),
+			get_cell_content(Board, NextMove, Player),
 			(
-				Cell = Player ->
 				evaluate_score_helper(Board, Player, NextMove, Direction, 1, 1, StreakScore)
-				;
-				StreakScore is 0
 			)
+			;
+			StreakScore is 0
 		),
 		Scores
 	),
@@ -46,22 +43,22 @@ evaluate_score_helper(Board, Player, R-C, StepR-StepC, ActualScore, PreviousBest
 	R1 is R + StepR,
 	C1 is C + StepC,
 	are_valid_coordinates(Board, R1-C1),
+	get_cell_content(Board, R1-C1, Cell),
 	(
-		get_cell_content(Board, R1-C1, Cell),
+		Cell = Player ->
+		NewScore is ActualScore + 1,
 		(
-			Cell = Player ->
-			NewScore is ActualScore + 1,
-			(
-				PreviousBestScore < NewScore ->
-				NewBestScore is NewScore
-				;
-				NewBestScore is PreviousBestScore
-			),
+			PreviousBestScore < NewScore ->
 			NewBestScore is NewScore
 			;
-			NewScore is 0,
 			NewBestScore is PreviousBestScore
-		)
+		),
+		NewBestScore is NewScore
+		;
+		NewScore is 0,
+		NewBestScore is PreviousBestScore,
+		!,
+		fail
 	),
 	evaluate_score_helper(Board, Player, R1-C1, StepR-StepC, NewScore, NewBestScore, BestScore).
 	
