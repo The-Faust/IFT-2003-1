@@ -19,7 +19,7 @@ cell_to_char(v, '┼').   % Case vide (v).
 cell_to_char(n, '●').   % Case avec un pion noir (n).
 cell_to_char(b, '◯').   % Case avec un pion blanc (b).
 
-% Affiche le plateau de jeu.
+% Affiche le plateau de jeu:
 display_gomoku_board(Board) :-
 	length(Board, N),
 	write('   '),

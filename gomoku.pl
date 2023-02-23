@@ -31,7 +31,7 @@ other(b, n).
 other(n, b).
 
 % Permet à un joueur de jouer son tour:
-move(Board, Player, NewBoard, WinningScore) :-
+move(Board, Player, NewBoard, Goal) :-
 	(   % Vérifie s'il reste un emplacement vide:
 		cell_is_empty(Board, _) ->
 		(
@@ -43,7 +43,7 @@ move(Board, Player, NewBoard, WinningScore) :-
 				)
 				;
 				(   % L'ordinateur choisi la case à jouer:
-					agent(Board, Player, WinningScore, Move)
+					agent(Board, Player, Goal, Move)
 				)
 			),
 			% Met à jour le plateau de jeu:
@@ -58,17 +58,17 @@ move(Board, Player, NewBoard, WinningScore) :-
 	).
 
 % Établi un tour complet et boucle jusqu'à ce que le jeu termine:
-turn(Board, Player, NewBoard, WinningScore) :-
+turn(Board, Player, NewBoard, Goal) :-
 	draw_line,
 	players_name(Player, PlayersName),
 	cell_to_char(Player, PlayersSymbol),
 	format('Le joueur ~w (~w) joue son tour:\n', [PlayersName, PlayersSymbol]),
-	move(Board, Player, NewBoard, WinningScore),
+	move(Board, Player, NewBoard, Goal),
 	display_gomoku_board(NewBoard),
 	evaluate_score(NewBoard, Player, Score),
 	format('Score du joueur ~w (~w): ~d\n', [PlayersName, PlayersSymbol, Score]),
 	(
-		evaluate_score(NewBoard, Player, WinningScore)  ->
+		evaluate_score(NewBoard, Player, Goal)  ->
 		(
 			draw_line,
 			format('Le joueur ~w (~w) gagne!\n', [PlayersName, PlayersSymbol]),
@@ -78,7 +78,7 @@ turn(Board, Player, NewBoard, WinningScore) :-
 		true
 	),
 	other(Player, NextPlayer),
-	turn(NewBoard, NextPlayer, _, WinningScore).
+	turn(NewBoard, NextPlayer, _, Goal).
 
 % Démarre le jeu avec paramétrage:
 play :-
@@ -88,50 +88,50 @@ play :-
 	(
 		N > 3 ->
 		format(atom(Prompt), 'Choisissez l\'objectif, soit le nombre de jetons à aligner: (min: 3, max: ~d)', N),
-		request_valid_integer(3, N, Prompt, WinningScore)
+		request_valid_integer(3, N, Prompt, Goal)
 		;
-		WinningScore is 3
+		Goal is 3
 	),
 	request_players_color,
 	display_gomoku_board(Board),
-	turn(Board, Firstplayer, _, WinningScore).
+	turn(Board, Firstplayer, _, Goal).
 
 % Démarre le jeu selon les paramètres typiques:
 gomoku :-
 	Firstplayer = n,
 	N is 19,
-	WinningScore is 5,
+	Goal is 5,
 	create_gomoku_board(N, Board),
 	request_players_color,
 	display_gomoku_board(Board),
-	turn(Board, Firstplayer, _, WinningScore).
-
-% Implémentation de Tic-Tac-Toe (bonus):
-tictactoe :-
-	Firstplayer = n,
-	N is 3,
-	WinningScore is 3,
-	create_gomoku_board(N, Board),
-	request_players_color,
-	display_gomoku_board(Board),
-	turn(Board, Firstplayer, _, WinningScore).
+	turn(Board, Firstplayer, _, Goal).
 
 % Partie de Gomoku AI vs AI:
 gomoku_auto :-
 	Firstplayer = n,
 	N is 19,
-	WinningScore is 5,
+	Goal is 5,
 	create_gomoku_board(N, Board),
 	b_setval(players_color, v),
 	display_gomoku_board(Board),
-	turn(Board, Firstplayer, _, WinningScore).
+	turn(Board, Firstplayer, _, Goal).
+
+% Implémentation de Tic-Tac-Toe (bonus):
+tictactoe :-
+	Firstplayer = n,
+	N is 3,
+	Goal is 3,
+	create_gomoku_board(N, Board),
+	request_players_color,
+	display_gomoku_board(Board),
+	turn(Board, Firstplayer, _, Goal).
 
 % Partie de Tic-Tac-Toe AI vs AI:
 tictactoe_auto :-
 	Firstplayer = n,
 	N is 3,
-	WinningScore is 3,
+	Goal is 3,
 	create_gomoku_board(N, Board),
 	b_setval(players_color, v),
 	display_gomoku_board(Board),
-	turn(Board, Firstplayer, _, WinningScore).
+	turn(Board, Firstplayer, _, Goal).

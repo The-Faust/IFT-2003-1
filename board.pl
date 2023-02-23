@@ -40,6 +40,20 @@ cell_is_empty(Board, Row-Col) :-
     get_cell_content(Board, Row-Col, Content),
     Content == v.
 
+% Compte le nombre de cases respectant un prédicat donné:
+count_cells(Board, Predicate, Count) :-
+    flatten(Board, Flat),
+    include(Predicate, Flat, FilteredCells),
+    length(FilteredCells, Count).
+
+% Compte le nombre de cases vides:
+count_empty_cells(Board, Count) :-
+    count_cells(Board, [C]>>(C = v), Count).
+
+% Compte le nombre de cases occupées:
+count_occupied_cells(Board, Count) :-
+    count_cells(Board, [C]>>(not(C = v)), Count).
+
 % Vérifie si les coordonnées existent sur le plateau:
 are_valid_coordinates(Board, Row-Col) :-
     get_last_index(Board, LastIndex),
@@ -56,13 +70,13 @@ get_last_index(Board, LastIndex) :-
     LastIndex is N - 1.
     
 % Permet d'obtenir une case vide au hasard:
-get_a_random_move(Board, Move) :-
+get_a_random_move(Board, Row-Col) :-
     get_last_index(Board, LastIndex),
     repeat,
     (
         random_between(0, LastIndex, Row),
         random_between(0, LastIndex, Col),
-        cell_is_empty(Board, Move)
+        cell_is_empty(Board, Row-Col)
     ).
 
 % Prédicat utilitaire pour remplacer le contenu d'une case:
