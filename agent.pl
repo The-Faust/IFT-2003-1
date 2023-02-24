@@ -31,54 +31,47 @@ agent(Board, Player, Goal, Move) :-
 
 % Heuristique qui permet d'évaluer la valeur d'un état:
 heuristic_value(Board, Player, Goal, Value) :-
-	evaluate_score(Board, Player, Score),
-	(	% Vérifie si le joueur gagne:
-		Score >= Goal ->
-		Value is 1000
+	game_over(Board, Goal, Winner),
+	(
+		Winner = nil ->
+		Value is 0
 		;
-		(	% Vérifie si l'opposant gagne:
-			other(Player, Opponent),
-			evaluate_score(Board, Opponent, OpponentScore),
-			(
-				OpponentScore >= Goal ->
-				Value is -1000
-				;
-				% Ni le joueur, ni l'opposant ne gagnent:
-				Value is 1.1*Score - OpponentScore
-			)
+		(
+			Winner = Player ->
+			Value is 1
+			;
+			Value is -1
 		)
 	).
 
 % Établi les transitions possibles à partir d'un état:
 moves(Board-Goal-LastMove, PosList) :-
-	% Récupère les cases non utilisées:
-	get_possible_moves(Board, PossibleMoves),
-	% Mélange l'ordre des cases pour éviter l'aspect prévisibile:
-	random_permutation(PossibleMoves, PossibleMovesShuffled),
-	% Détermine à qui le tour appartient:
+	not(game_over(Board, Goal, _)),
 	(
-		max_to_move(Board-_-LastMove) ->
-		Player = n
-		;
-		Player = b
-	),
-	% Construit la liste des transitions possibles:
-	bagof(NewBoard-Goal-Move,
+		% Récupère les cases non utilisées:
+		get_possible_moves(Board, PossibleMoves),
+		sort(0, @=<, PossibleMoves, Sorted),
+		% Mélange l'ordre des cases pour éviter l'aspect prévisibile:
+		%random_permutation(PossibleMoves, PossibleMovesShuffled),
+		% Détermine à qui le tour appartient:
 		(
-			member(Move, PossibleMovesShuffled),
-			make_a_move(Board, Player, Move, NewBoard)
-		), PosList).
+			max_to_move(Board-_-LastMove) ->
+			Player = n
+			;
+			Player = b
+		),
+		% Construit la liste des transitions possibles:
+		%bagof(NewBoard-Goal-Move,
+		setof(NewBoard-Goal-Move,
+			(
+				member(Move, Sorted), %PossibleMovesShuffled),
+				make_a_move(Board, Player, Move, NewBoard)
+			), PosList)
+	).
 
-% Évalue la valeur d'un état:
-staticval(Board-Goal-LastMove, Val) :-
-	% Détermine à qui le tour appartient:
-	(
-		max_to_move(Board-_-LastMove) ->
-		NextPlayer = n ;
-		NextPlayer = b
-	),
-	% Évalue la valeur d'un état pour celui à qui le tour appartient:
-	heuristic_value(Board, NextPlayer, Goal, Val).
+% Évalue la valeur d'un état (Maximiseur = n; Minimiseur = b):
+staticval(Board-Goal-_, Val) :-
+	heuristic_value(Board, n, Goal, Val).
 
 % Est-ce le tour à l'adversaire?
 min_to_move(Pos) :-

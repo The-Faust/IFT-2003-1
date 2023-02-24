@@ -14,6 +14,7 @@
 %               Gomoku Board.               %
 %===========================================%
 
+
 % Créer un plateau de jeu vierge de dimensions N×N:
 create_gomoku_board(N, Board) :-
     length(Board, N),
@@ -99,12 +100,3 @@ winning_move(Board, Player, Goal, Move) :-
     set_cell_content(Board, Move, Player, NewBoard),
     evaluate_score(NewBoard, Player, Score),
     Score >= Goal.
-
-% Vérifie si la partie est terminée:
-game_over(Board, Goal) :-
-    not(has_an_empty_cell(Board))
-    ;
-    (
-        evaluate_score(Board, _, Score),
-        Score >= Goal
-    ).

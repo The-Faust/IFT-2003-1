@@ -14,6 +14,7 @@
 %           Algorithme Alpha-Bêta .         %
 %===========================================%
 
+
 % Algorithme Alpha-Bêta tel que suggérée dans le livre
 % intitulé "Prolog programming for artificial intelligence"
 % par Ivan Bratko, 1986

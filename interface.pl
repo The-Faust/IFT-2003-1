@@ -14,6 +14,7 @@
 %                 Interface.                %
 %===========================================%
 
+
 % Identifiants du contenu d'une case:
 cell_to_char(v, '┼').   % Case vide (v).
 cell_to_char(n, '●').   % Case avec un pion noir (n).
