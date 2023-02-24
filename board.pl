@@ -10,9 +10,9 @@
 %   IFT-2003 - Intelligence artificielle I
 %   Hiver 2023
 
-%======================================%
-%             Gomoku Board.            %
-%======================================%
+%===========================================%
+%               Gomoku Board.               %
+%===========================================%
 
 % Créer un plateau de jeu vierge de dimensions N×N:
 create_gomoku_board(N, Board) :-

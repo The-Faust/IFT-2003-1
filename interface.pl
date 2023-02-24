@@ -10,9 +10,9 @@
 %   IFT-2003 - Intelligence artificielle I
 %   Hiver 2023
 
-%======================================%
-%               Interface.             %
-%======================================%
+%===========================================%
+%                 Interface.                %
+%===========================================%
 
 % Identifiants du contenu d'une case:
 cell_to_char(v, '┼').   % Case vide (v).
@@ -129,7 +129,7 @@ draw_line :-
 	write('────────────────────────────────────────────────────────────────────\n').
 
 % Affiche à qui le tour appartient:
-introduce_turn(Player, PlayersName, PlayersSymbol) :-
+introduce_turn(Player) :-
 	draw_line,
 	players_name(Player, PlayersName),
 	cell_to_char(Player, PlayersSymbol),

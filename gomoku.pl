@@ -10,18 +10,25 @@
 %   IFT-2003 - Intelligence artificielle I
 %   Hiver 2023
 
-%======================================%
-%  Options:                            %
-%  -Initialiser le jeu:  ?- gomoku.    %
-%  -Avec paramétrage:    ?- play.      %
-%  -Tic-Tac-Toe (bonus): ?- tictactoe. %
-%======================================%
+%===========================================%
+%  Options:                                 %
+%  -Initialiser le jeu:  ?- gomoku.         %
+%  -Avec paramétrage:    ?- play.           %
+%  -Tic-Tac-Toe (bonus): ?- tictactoe.      %
+%                                           %
+%  Pour une partie AI vs AI:                %
+%  - Gomoku:             ?- gomoku_auto     %
+%  - Tic-Tac-Toe:        ?- tictactoe_auto  %
+%===========================================%
+
 
 :- [board].
 :- [interface].
 :- [evaluation].
-:- [minimax].
+%:- [minimax].
+:- [alphabeta].
 :- [agent].
+
 
 % Identifiants du joueur:
 players_name(n, 'noir').    % Joueur noir (n).
@@ -33,7 +40,7 @@ other(n, b).
 
 % Établi un tour complet et boucle jusqu'à ce que le jeu termine:
 turn(Board, Player, NewBoard, Goal) :-
-	introduce_turn(Player, PlayersName, PlayersSymbol),
+	introduce_turn(Player),
 	(   % Vérifie s'il reste un emplacement vide:
 		has_an_empty_cell(Board) ->
 		(

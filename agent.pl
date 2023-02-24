@@ -10,23 +10,24 @@
 %   IFT-2003 - Intelligence artificielle I
 %   Hiver 2023
 
-%======================================%
-%           Agent intelligent .        %
-%======================================%
+%===========================================%
+%              Agent intelligent .          %
+%===========================================%
 
 % L'agent choisit de jouer dans (Row, Col):
 agent(Board, Player, Goal, Move) :-
 	other(Player, OtherPlayer),
 	(
-		% Vérifie s'il est possible de gagner sur ce tour:
-		winning_move(Board, Player, Goal, Move)
-		;
-		% Vérifie s'il est possible de perdre au prochain tour:
-		winning_move(Board, OtherPlayer, Goal, Move)
-		;
+%		% Vérifie s'il est possible de gagner sur ce tour:
+%		winning_move(Board, Player, Goal, Move)
+%		;
+%		% Vérifie s'il est possible de perdre au prochain tour:
+%		winning_move(Board, OtherPlayer, Goal, Move)
+%		;
 		% Minimax:
-		MaxDepth is 1,
-		minimax(Board, Player, Goal, MaxDepth, Move)
+		MaxDepth is 5,
+		alpha_beta(Board, Player, Goal, max, MaxDepth, -1000, 1000, Move, _)
+		%minimax(Board, Player, Goal, MaxDepth, Move)
 	).
 
 % Heuristique qui permet d'évaluer la valeur d'un état:

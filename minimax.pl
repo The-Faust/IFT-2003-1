@@ -10,9 +10,9 @@
 %   IFT-2003 - Intelligence artificielle I
 %   Hiver 2023
 
-%======================================%
-%          Algorithme Minimax .        %
-%======================================%
+%===========================================%
+%             Algorithme Minimax.           %
+%===========================================%
 
 % Permet de passer du mode de maximisation à celui de minimisation:
 switch(max, min).
