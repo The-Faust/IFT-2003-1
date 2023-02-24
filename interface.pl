@@ -113,6 +113,50 @@ request_next_move(Board, Move) :-
 		fail
 	).
 
+% Demande à l'utilisateur le nombre de jetons à aligner pour gagner:
+request_goal(Board, Goal) :-
+	length(Board, N),
+	(
+		N > 3 ->
+		format(atom(Prompt), 'Choisissez l\'objectif, soit le nombre de jetons à aligner: (min: 3, max: ~d)', N),
+		request_valid_integer(3, N, Prompt, Goal)
+		;
+		Goal is 3
+	).
+
 % Affiche une ligne de séparation:
 draw_line :-
 	write('────────────────────────────────────────────────────────────────────\n').
+
+% Affiche à qui le tour appartient:
+introduce_turn(Player, PlayersName, PlayersSymbol) :-
+	draw_line,
+	players_name(Player, PlayersName),
+	cell_to_char(Player, PlayersSymbol),
+	format('Le joueur ~w (~w) joue son tour:\n', [PlayersName, PlayersSymbol]).
+
+% Affiche le résultat du tour qui termine:
+conclude_turn(Board, Player, Goal, NextPlayer) :-
+	display_gomoku_board(Board),
+	evaluate_score(Board, Player, Score),
+	players_name(Player, PlayersName),
+	cell_to_char(Player, PlayersSymbol),
+	format('Score du joueur ~w (~w): ~d\n', [PlayersName, PlayersSymbol, Score]),
+	(
+		Score >= Goal ->
+		(
+			draw_line,
+			format('Le joueur ~w (~w) gagne!\n', [PlayersName, PlayersSymbol]),
+			halt
+		)
+		;
+		true
+	),
+	other(Player, NextPlayer).
+
+% Informe l'utilisateur qu'on a obtenu un impasse:
+display_tie :-
+	write('Le plateau de jeu est plein!\n'),
+	write('Il s\'agit d\'un impasse!\n'),
+	halt.
+	

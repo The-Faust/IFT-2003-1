@@ -59,6 +59,11 @@ count_empty_cells(Board, Count) :-
 count_occupied_cells(Board, Count) :-
     count_cells(Board, [C]>>(not(C = v)), Count).
 
+% Vérifie s'il reste un emplacement non occupé:
+has_an_empty_cell(Board) :-
+    flatten(Board, Flat),
+    memberchk(v, Flat).
+
 % Vérifie si les coordonnées existent sur le plateau:
 are_valid_coordinates(Board, Row-Col) :-
     get_last_index(Board, LastIndex),
@@ -83,4 +88,23 @@ get_a_random_move(Board, Row-Col) :-
         random_between(0, LastIndex, Col),
         cell_is_empty(Board, Row-Col)
     ).
-    
+
+% Permet d'effectuer un mouvement:
+make_a_move(Board, Player, Move, NewBoard) :-
+    set_cell_content(Board, Move, Player, NewBoard).
+
+% Vérifie s'il est possible pour le joueur de gagner en un tour:
+winning_move(Board, Player, Goal, Move) :-
+    cell_is_empty(Board, Move),
+    set_cell_content(Board, Move, Player, NewBoard),
+    evaluate_score(NewBoard, Player, Score),
+    Score >= Goal.
+
+% Vérifie si la partie est terminée:
+game_over(Board, Goal) :-
+    not(has_an_empty_cell(Board))
+    ;
+    (
+        evaluate_score(Board, _, Score),
+        Score >= Goal
+    ).
