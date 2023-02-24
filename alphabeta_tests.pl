@@ -47,5 +47,27 @@ test(alphabeta_tic_tac_toe_2) :-
 	
 	assertion(Move = 2-2),
 	assertion(Val = -1).
+
+test(alphabeta_tic_tac_toe_3) :-
+	Pos = [[b,b,n],[v,n,v],[b,n,v]]-3-(0-1),
+	Alpha = -inf,
+	Beta = inf,
+	
+	alphabeta(Pos, Alpha, Beta, GoodPos, Val),
+	GoodPos = _-_-Move,
+	
+	assertion(Move = 1-0),
+	assertion(Val = 0).
+
+test(alphabeta_tic_tac_toe_4) :-
+	Pos = [[b,b,n],[n,v,b],[v,v,n]]-3-(1-2),
+	Alpha = -inf,
+	Beta = inf,
+	
+	alphabeta(Pos, Alpha, Beta, GoodPos, Val),
+	GoodPos = _-_-Move,
+	
+	assertion(Move = 2-0),
+	assertion(Val = 1).
 	
 :- end_tests(alphabeta).

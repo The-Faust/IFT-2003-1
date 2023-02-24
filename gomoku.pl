@@ -111,4 +111,3 @@ tictactoe_auto :-
 	b_setval(players_color, v),
 	display_gomoku_board(Board),
 	turn(Board, Firstplayer, _, Goal).
-	

@@ -53,4 +53,3 @@ betterof(Pos, Val, _, Val1, Pos, Val) :-
 	max_to_move(Pos), Val < Val1, !.
 
 betterof(_, _, Pos1, Val1, Pos1, Val1).
-	

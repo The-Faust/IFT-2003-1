@@ -15,6 +15,9 @@
 %===========================================%
 
 
+:- dynamic randomize/1.
+
+
 % L'agent choisit de jouer dans (Row, Col):
 agent(Board, Player, Goal, Move) :-
 	%other(Player, OtherPlayer),
@@ -26,6 +29,7 @@ agent(Board, Player, Goal, Move) :-
 %		winning_move(Board, OtherPlayer, Goal, Move)
 %		;
 		% Algorithme Alpha-Bêta:
+		assertz(randomize(true)),
 		alphabeta(Board-Goal-nil, -inf, inf, _-_-Move, _)
 	).
 
@@ -50,9 +54,6 @@ moves(Board-Goal-LastMove, PosList) :-
 	(
 		% Récupère les cases non utilisées:
 		get_possible_moves(Board, PossibleMoves),
-		sort(0, @=<, PossibleMoves, Sorted),
-		% Mélange l'ordre des cases pour éviter l'aspect prévisibile:
-		%random_permutation(PossibleMoves, PossibleMovesShuffled),
 		% Détermine à qui le tour appartient:
 		(
 			max_to_move(Board-_-LastMove) ->
@@ -60,13 +61,28 @@ moves(Board-Goal-LastMove, PosList) :-
 			;
 			Player = b
 		),
-		% Construit la liste des transitions possibles:
-		%bagof(NewBoard-Goal-Move,
-		setof(NewBoard-Goal-Move,
-			(
-				member(Move, Sorted), %PossibleMovesShuffled),
-				make_a_move(Board, Player, Move, NewBoard)
-			), PosList)
+		(
+			randomize(true) ->
+			(	% Mélange l'ordre des cases pour éviter l'aspect prévisibile:
+				random_permutation(PossibleMoves, PossibleMovesShuffled),
+				% Construit la liste des transitions possibles:
+				bagof(NewBoard-Goal-Move,
+					(
+						member(Move, PossibleMovesShuffled),
+						make_a_move(Board, Player, Move, NewBoard)
+					), PosList)
+			)
+			;
+			(	% Ordonne l'ordre de visite des cases pour un comportement déterministe:
+				sort(0, @=<, PossibleMoves, PossibleMovesSorted),
+				% Construit la liste des transitions possibles:
+				setof(NewBoard-Goal-Move,
+					(
+						member(Move, PossibleMovesSorted),
+						make_a_move(Board, Player, Move, NewBoard)
+					), PosList)
+			)
+		)
 	).
 
 % Évalue la valeur d'un état (Maximiseur = n; Minimiseur = b):
