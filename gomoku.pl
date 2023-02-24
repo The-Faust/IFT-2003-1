@@ -17,15 +17,14 @@
 %  -Tic-Tac-Toe (bonus): ?- tictactoe.      %
 %                                           %
 %  Pour une partie AI vs AI:                %
-%  - Gomoku:             ?- gomoku_auto     %
-%  - Tic-Tac-Toe:        ?- tictactoe_auto  %
+%  - Gomoku:             ?- gomoku_auto.    %
+%  - Tic-Tac-Toe:        ?- tictactoe_auto. %
 %===========================================%
 
 
 :- [board].
 :- [interface].
 :- [evaluation].
-%:- [minimax].
 :- [alphabeta].
 :- [agent].
 
@@ -76,7 +75,7 @@ play :-
 % Démarre le jeu selon les paramètres typiques:
 gomoku :-
 	Firstplayer = n,
-	N is 7,
+	N is 19,
 	Goal is 5,
 	create_gomoku_board(N, Board),
 	request_players_color,
@@ -86,7 +85,7 @@ gomoku :-
 % Partie de Gomoku AI vs AI:
 gomoku_auto :-
 	Firstplayer = n,
-	N is 7,
+	N is 19,
 	Goal is 5,
 	create_gomoku_board(N, Board),
 	b_setval(players_color, v),
