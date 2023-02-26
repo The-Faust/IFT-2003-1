@@ -165,4 +165,3 @@ display_tie :-
 	write('Le plateau de jeu est plein!\n'),
 	write('Il s\'agit d\'un impasse!\n'),
 	halt.
-	

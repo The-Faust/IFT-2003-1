@@ -15,6 +15,8 @@
 %===========================================%
 
 
+:- use_module(library(clpfd)).
+
 % Créer un plateau de jeu vierge de dimensions N×N:
 create_gomoku_board(N, Board) :-
     length(Board, N),
@@ -93,3 +95,37 @@ get_a_random_move(Board, Row-Col) :-
 % Permet d'effectuer un mouvement:
 make_a_move(Board, Player, Move, NewBoard) :-
     set_cell_content(Board, Move, Player, NewBoard).
+
+% Effectue une rotation de 90º du plateau:
+rotate_board(Board, RotatedBoard) :-
+    transpose(Board, TransposedBoard),
+    maplist(reverse, TransposedBoard, RotatedBoard).
+
+% Effectue une réflexion selon l'axe horizontal du plateau:
+flip_horizontal(Board, FlippedBoard) :-
+    reverse(Board, FlippedBoard).
+
+% Effectue une réflexion selon l'axe vertical du plateau:
+flip_vertical(Board, FlippedBoard) :-
+    maplist(reverse, Board, FlippedBoard).
+
+% Effectue une réflexion selon la première diagonale du plateau:
+flip_first_diagonal(Board, FlippedBoard) :-
+    transpose(Board, FlippedBoard).
+
+% Effectue une réflexion selon la seconde diagonale du plateau:
+flip_second_diagonal(Board, FlippedBoard) :-
+    reverse(Board, ReversedBoard),
+    transpose(ReversedBoard, TransposedBoard),
+    reverse(TransposedBoard, FlippedBoard).
+
+% Permet d'inverser le plateau de jeu (b <-> n):
+invert_board(Board, InvertedBoard) :-
+    maplist(invert_row, Board, InvertedBoard).
+
+invert_row(Row, InvertedRow) :-
+    maplist(invert_value, Row, InvertedRow).
+    
+invert_value(b, n).
+invert_value(n, b).
+invert_value(X, X) :- dif(X, b), dif(X, n).

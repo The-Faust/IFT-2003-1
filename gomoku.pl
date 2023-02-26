@@ -27,7 +27,6 @@
 :- [interface].
 :- [agent].
 
-
 % Paramètres choisis par l'utilisateur:
 :- dynamic player/1. % Couleur de l'utilisateur.
 
