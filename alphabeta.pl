@@ -11,11 +11,13 @@
 %   Hiver 2023
 
 %===========================================%
-%           Algorithme Alpha-Bêta .         %
+%           Algorithme Alpha-Bêta.          %
 %===========================================%
 
 
-% Algorithme Alpha-Bêta tel que suggérée dans le livre
+:- module(alphabeta, [alphabeta/5]).
+
+% Algorithme Alpha-Bêta tel que suggéré dans le livre
 % intitulé "Prolog programming for artificial intelligence"
 % par Ivan Bratko, 1986
 % Source: https://silp.iiita.ac.in/wp-content/uploads/PROLOG.pdf

@@ -16,13 +16,19 @@
 
 
 :- [evaluation].
+:- [minimax].
 :- [alphabeta].
+:- [alphabeta_heuristic].
 
 % L'agent choisit de jouer dans (Row, Col):
 agent(Board, Player, Move) :-
 	other(Player, LastPlayer),
+	% Algorithme Minimax:
+%	minimax(Board-LastPlayer-nil, _-_-Move, _).
 	% Algorithme Alpha-Bêta:
-	alphabeta(Board-LastPlayer-nil, -inf, inf, _-_-Move, _).
+%	alphabeta(Board-LastPlayer-nil, -inf, inf, _-_-Move, _).
+	% Algorithme Alpha-Bêta avec heuristique (profodeur de recherche limitée):
+	alphabeta_heuristic(Board-LastPlayer-nil, -inf, inf, _-_-Move, _, 4).
 
 % Établi les transitions possibles à partir d'un état:
 moves(Board-LastPlayer-_, PosList) :-
@@ -51,6 +57,27 @@ staticval(Board-_-_, Value) :-
 			;
 			Value is -1
 		)
+	).
+
+% Évalue la valeur heurisitique d'un état pour un joueur:
+heuristicval(Board-_-_, Value) :-
+	game_over(Board, Winner),
+	(
+		Winner = nil ->
+		Value is 0
+		;
+		(
+			Winner = n ->
+			Value is 1000
+			;
+			Value is -1000
+		)
+	)
+	;
+	(
+		evaluate_score(Board, n, BestScoreN),
+		evaluate_score(Board, b, BestScoreB),
+		Value is BestScoreN - BestScoreB
 	).
 
 % Établi à qui appartient le tour:
