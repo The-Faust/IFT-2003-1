@@ -22,12 +22,14 @@
 %===========================================%
 
 
+% Chargement des modules:
 :- [board].
 :- [interface].
-:- [evaluation].
-:- [alphabeta].
 :- [agent].
 
+
+% Paramètres choisis par l'utilisateur:
+:- dynamic player/1. % Couleur de l'utilisateur.
 
 % Identifiants du joueur:
 players_name(n, 'noir').    % Joueur noir (n).
@@ -38,20 +40,19 @@ other(b, n).
 other(n, b).
 
 % Établi un tour complet et boucle jusqu'à ce que le jeu termine:
-turn(Board, Player, NewBoard, Goal) :-
+turn(Board, Player, NewBoard) :-
 	introduce_turn(Player),
 	(   % Vérifie s'il reste un emplacement vide:
 		has_an_empty_cell(Board) ->
 		(
 			(   % Vérifie à qui le tour appartient:
-				b_getval(players_color, Color),
-				Player == Color ->
+				player(Player) ->
 				(   % Le joueur choisi la case à jouer:
 					request_next_move(Board, Move)
 				)
 				;
 				(   % L'ordinateur choisi la case à jouer:
-					agent(Board, Player, Goal, Move)
+					agent(Board, Player, Move)
 				)
 			),
 			make_a_move(Board, Player, Move, NewBoard)
@@ -60,54 +61,52 @@ turn(Board, Player, NewBoard, Goal) :-
 		% Aucun emplacement vide, c'est un impasse:
 		display_tie
 	),
-	conclude_turn(NewBoard, Player, Goal, NextPlayer),
-	turn(NewBoard, NextPlayer, _, Goal).
+	conclude_turn(NewBoard, Player, NextPlayer),
+	turn(NewBoard, NextPlayer, _).
 
 % Démarre le jeu avec paramétrage:
 play :-
 	Firstplayer = n,
 	set_gomoku_board(Board),
-	request_goal(Board, Goal),
+	request_goal(Board),
 	request_players_color,
 	display_gomoku_board(Board),
-	turn(Board, Firstplayer, _, Goal).
+	turn(Board, Firstplayer, _).
 
 % Démarre le jeu selon les paramètres typiques:
 gomoku :-
 	Firstplayer = n,
 	N is 19,
-	Goal is 5,
+	set_goal(5),
 	create_gomoku_board(N, Board),
 	request_players_color,
 	display_gomoku_board(Board),
-	turn(Board, Firstplayer, _, Goal).
+	turn(Board, Firstplayer, _).
 
 % Partie de Gomoku AI vs AI:
 gomoku_auto :-
 	Firstplayer = n,
 	N is 19,
-	Goal is 5,
+	set_goal(5),
 	create_gomoku_board(N, Board),
-	b_setval(players_color, v),
 	display_gomoku_board(Board),
-	turn(Board, Firstplayer, _, Goal).
+	turn(Board, Firstplayer, _).
 
 % Implémentation de Tic-Tac-Toe (bonus):
 tictactoe :-
 	Firstplayer = n,
 	N is 3,
-	Goal is 3,
+	set_goal(3),
 	create_gomoku_board(N, Board),
 	request_players_color,
 	display_gomoku_board(Board),
-	turn(Board, Firstplayer, _, Goal).
+	turn(Board, Firstplayer, _).
 
 % Partie de Tic-Tac-Toe AI vs AI:
 tictactoe_auto :-
 	Firstplayer = n,
 	N is 3,
-	Goal is 3,
+	set_goal(3),
 	create_gomoku_board(N, Board),
-	b_setval(players_color, v),
 	display_gomoku_board(Board),
-	turn(Board, Firstplayer, _, Goal).
+	turn(Board, Firstplayer, _).

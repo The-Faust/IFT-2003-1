@@ -93,10 +93,3 @@ get_a_random_move(Board, Row-Col) :-
 % Permet d'effectuer un mouvement:
 make_a_move(Board, Player, Move, NewBoard) :-
     set_cell_content(Board, Move, Player, NewBoard).
-
-% Vérifie s'il est possible pour le joueur de gagner en un tour:
-winning_move(Board, Player, Goal, Move) :-
-    cell_is_empty(Board, Move),
-    set_cell_content(Board, Move, Player, NewBoard),
-    evaluate_score(NewBoard, Player, Score),
-    Score >= Goal.

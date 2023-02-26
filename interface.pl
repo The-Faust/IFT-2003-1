@@ -15,6 +15,9 @@
 %===========================================%
 
 
+:- [evaluation].
+:- [board].
+
 % Identifiants du contenu d'une case:
 cell_to_char(v, '┼').   % Case vide (v).
 cell_to_char(n, '●').   % Case avec un pion noir (n).
@@ -60,7 +63,7 @@ request_players_color :-
 	atom_string(Color, Input_Lower),
 	(
 		member(Color, [b, n]) ->
-		b_setval(players_color, Color),
+		assertz(player(Color)),
 		true
 		;
 		write('Vous devez choisir une couleur entre b et n.\n'),
@@ -115,14 +118,15 @@ request_next_move(Board, Move) :-
 	).
 
 % Demande à l'utilisateur le nombre de jetons à aligner pour gagner:
-request_goal(Board, Goal) :-
+request_goal(Board) :-
 	length(Board, N),
 	(
 		N > 3 ->
 		format(atom(Prompt), 'Choisissez l\'objectif, soit le nombre de jetons à aligner: (min: 3, max: ~d)', N),
-		request_valid_integer(3, N, Prompt, Goal)
+		request_valid_integer(3, N, Prompt, Goal),
+		set_goal(Goal)
 		;
-		Goal is 3
+		set_goal(3)
 	).
 
 % Affiche une ligne de séparation:
@@ -137,13 +141,14 @@ introduce_turn(Player) :-
 	format('Le joueur ~w (~w) joue son tour:\n', [PlayersName, PlayersSymbol]).
 
 % Affiche le résultat du tour qui termine:
-conclude_turn(Board, Player, Goal, NextPlayer) :-
+conclude_turn(Board, Player, NextPlayer) :-
 	display_gomoku_board(Board),
 	evaluate_score(Board, Player, Score),
 	players_name(Player, PlayersName),
 	cell_to_char(Player, PlayersSymbol),
 	format('Score du joueur ~w (~w): ~d\n', [PlayersName, PlayersSymbol, Score]),
 	(
+		get_goal(Goal),
 		Score >= Goal ->
 		(
 			draw_line,

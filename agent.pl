@@ -15,95 +15,45 @@
 %===========================================%
 
 
-:- dynamic randomize/1.
-
+:- [evaluation].
+:- [alphabeta].
 
 % L'agent choisit de jouer dans (Row, Col):
-agent(Board, Player, Goal, Move) :-
-	%other(Player, OtherPlayer),
-	(
-%		% Vérifie s'il est possible de gagner sur ce tour:
-%		winning_move(Board, Player, Goal, Move)
-%		;
-%		% Vérifie s'il est possible de perdre au prochain tour:
-%		winning_move(Board, OtherPlayer, Goal, Move)
-%		;
-		% Algorithme Alpha-Bêta:
-		assertz(randomize(true)),
-		alphabeta(Board-Goal-nil, -inf, inf, _-_-Move, _)
-	).
+agent(Board, Player, Move) :-
+	other(Player, LastPlayer),
+	% Algorithme Alpha-Bêta:
+	alphabeta(Board-LastPlayer-nil, -inf, inf, _-_-Move, _).
 
-% Heuristique qui permet d'évaluer la valeur d'un état:
-heuristic_value(Board, Player, Goal, Value) :-
-	game_over(Board, Goal, Winner),
+% Établi les transitions possibles à partir d'un état:
+moves(Board-LastPlayer-_, PosList) :-
+	not(game_over(Board, _)),
+	% Récupère les cases non utilisées:
+	get_possible_moves(Board, PossibleMoves),
+	% Détermine à qui le tour appartient:
+	other(Player, LastPlayer),
+	% Construit la liste des transitions possibles:
+	bagof(NewBoard-Player-Move,
+		(
+			member(Move, PossibleMoves),
+			make_a_move(Board, Player, Move, NewBoard)
+		), PosList).
+
+% Évalue la valeur d'un état pour un joueur:
+staticval(Board-_-_, Value) :-
+	game_over(Board, Winner),
 	(
 		Winner = nil ->
 		Value is 0
 		;
 		(
-			Winner = Player ->
+			Winner = n ->
 			Value is 1
 			;
 			Value is -1
 		)
 	).
 
-% Établi les transitions possibles à partir d'un état:
-moves(Board-Goal-LastMove, PosList) :-
-	not(game_over(Board, Goal, _)),
-	(
-		% Récupère les cases non utilisées:
-		get_possible_moves(Board, PossibleMoves),
-		% Détermine à qui le tour appartient:
-		(
-			max_to_move(Board-_-LastMove) ->
-			Player = n
-			;
-			Player = b
-		),
-		(
-			randomize(true) ->
-			(	% Mélange l'ordre des cases pour éviter l'aspect prévisibile:
-				random_permutation(PossibleMoves, PossibleMovesShuffled),
-				% Construit la liste des transitions possibles:
-				bagof(NewBoard-Goal-Move,
-					(
-						member(Move, PossibleMovesShuffled),
-						make_a_move(Board, Player, Move, NewBoard)
-					), PosList)
-			)
-			;
-			(	% Ordonne l'ordre de visite des cases pour un comportement déterministe:
-				sort(0, @=<, PossibleMoves, PossibleMovesSorted),
-				% Construit la liste des transitions possibles:
-				setof(NewBoard-Goal-Move,
-					(
-						member(Move, PossibleMovesSorted),
-						make_a_move(Board, Player, Move, NewBoard)
-					), PosList)
-			)
-		)
-	).
-
-% Évalue la valeur d'un état (Maximiseur = n; Minimiseur = b):
-staticval(Board-Goal-_, Val) :-
-	heuristic_value(Board, n, Goal, Val).
-
-% Est-ce le tour à l'adversaire?
-min_to_move(Pos) :-
-	not(max_to_move(Pos)).
-
-% Est-ce le tour à l'agent intelligent?
-max_to_move(Board-_-Move) :-
-	(	% L'agent intelligent vient d'être activé;
-		% On détermine à qui appartient le tour:
-		Move = nil,
-		count_cells(Board, [N]>>(N = n), NCount),
-		count_cells(Board, [B]>>(B = b), BCount),
-		BCount =< NCount
-	)
-	;
-	(	% On vérifie si c'était le joueur blanc qui a joué au dernier tour:
-		get_cell_content(Board, Move, LastPlayer),
-		LastPlayer = b
-	).
+% Établi à qui appartient le tour:
+min_to_move(_-n-_).
+max_to_move(_-b-_).
+max_to_move(_-nil-_).
