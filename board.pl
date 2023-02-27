@@ -129,3 +129,20 @@ invert_row(Row, InvertedRow) :-
 invert_value(b, n).
 invert_value(n, b).
 invert_value(X, X) :- dif(X, b), dif(X, n).
+
+% Extrait les lignes horizontales:
+get_horizontal_lines(Board, HorizontalLines) :-
+    Board = HorizontalLines.
+    
+% Extrait les lignes verticales:
+get_vertical_lines(Board, VerticalLines) :-
+    transpose(Board, VerticalLines).
+    
+% Extrait une ligne dans une direction donnée à partir d'une case:
+get_line(Board, R-C, StepR-StepC, Accumulator, Line) :-
+    get_cell_content(Board, R-C, Content), !,
+    NewAccumulator = [Content|Accumulator],
+    NewR is R + StepR,
+    NewC is C + StepC,
+    get_line(Board, NewR-NewC, StepR-StepC, NewAccumulator, Line).
+get_line(_, _, _, Line, Line).

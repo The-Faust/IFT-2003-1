@@ -61,24 +61,7 @@ staticval(Board-_-_, Value) :-
 
 % Évalue la valeur heurisitique d'un état pour un joueur:
 heuristicval(Board-_-_, Value) :-
-	game_over(Board, Winner),
-	(
-		Winner = nil ->
-		Value is 0
-		;
-		(
-			Winner = n ->
-			Value is 1000
-			;
-			Value is -1000
-		)
-	)
-	;
-	(
-		evaluate_score(Board, n, BestScoreN),
-		evaluate_score(Board, b, BestScoreB),
-		Value is BestScoreN - BestScoreB
-	).
+	heuristic_score(Board, Value).
 
 % Établi à qui appartient le tour:
 min_to_move(_-n-_).

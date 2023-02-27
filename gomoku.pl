@@ -40,6 +40,7 @@ other(n, b).
 
 % Établi un tour complet et boucle jusqu'à ce que le jeu termine:
 turn(Board, Player, NewBoard) :-
+	statistics(runtime, [Start|_]),
 	introduce_turn(Player),
 	(   % Vérifie s'il reste un emplacement vide:
 		has_an_empty_cell(Board) ->
@@ -61,6 +62,9 @@ turn(Board, Player, NewBoard) :-
 		display_tie
 	),
 	conclude_turn(NewBoard, Player, NextPlayer),
+	statistics(runtime, [End|_]),
+	Time is (End - Start)/1000,
+	format('Le tour a pris: ~3f secondes.~n', [Time]),
 	turn(NewBoard, NextPlayer, _).
 
 % Démarre le jeu avec paramétrage:
@@ -109,3 +113,4 @@ tictactoe_auto :-
 	create_gomoku_board(N, Board),
 	display_gomoku_board(Board),
 	turn(Board, Firstplayer, _).
+	
