@@ -15,7 +15,9 @@
 %===========================================%
 
 
-:- module(alphabeta_heuristic, [alphabeta_heuristic/6]).
+:- module(alphabeta_heuristic, [alphabeta_heuristic/8]).
+
+:- dynamic memo_heuristicval/2.     % Mémoïsation.
 
 % Modification de l'algorithme Alpha-Bêta tel que suggéré dans le livre
 % intitulé "Prolog programming for artificial intelligence"
@@ -23,27 +25,37 @@
 % Source: https://silp.iiita.ac.in/wp-content/uploads/PROLOG.pdf
 
 % Cette version de l'algorithme limite la profondeur de recherche et
-% utilise un heuristique pour évaluer la valeur d'un état.
+% et le temps de calcul. Elle utilise un heuristique pour évaluer la 
+% valeur d'un état. De plus, la mémoïsation est utilisée pour éviter 
+% d'avoir à évaluer plusieurs fois le même état.
 
-alphabeta_heuristic(Pos, Alpha, Beta, GoodPos, Val, Depth) :-
+alphabeta_heuristic(Pos, Alpha, Beta, GoodPos, Val, Depth, TimeStamp, TimeLimit) :-
+    get_time(Time), Time - TimeStamp < TimeLimit,
     Depth > 0, moves(Pos, PosList), !,
-    boundedbest(PosList, Alpha, Beta, GoodPos, Val, Depth);
-    heuristicval(Pos, Val).
+    boundedbest(PosList, Alpha, Beta, GoodPos, Val, Depth, TimeStamp, TimeLimit);
+    heuristicval(Pos, Val),
+    hash_pos(Pos, Hash),
+    assertz(memo_heuristicval(Hash, Val)).
 
-boundedbest([Pos|PosList], Alpha, Beta, GoodPos, GoodVal, Depth) :-
-    Depth1 is Depth - 1,
-    alphabeta_heuristic(Pos, Alpha, Beta, _, Val, Depth1),
-    goodenough(PosList, Alpha, Beta, Pos, Val, GoodPos, GoodVal, Depth).
+boundedbest([Pos|PosList], Alpha, Beta, GoodPos, GoodVal, Depth, TimeStamp, TimeLimit) :-
+    (
+        hash_pos(Pos, Hash),
+        memo_heuristicval(Hash, Val)
+        ;
+        Depth1 is Depth - 1,
+        alphabeta_heuristic(Pos, Alpha, Beta, _, Val, Depth1, TimeStamp, TimeLimit)
+    ),
+    goodenough(PosList, Alpha, Beta, Pos, Val, GoodPos, GoodVal, Depth, TimeStamp, TimeLimit).
 
-goodenough([], _, _, Pos, Val, Pos, Val, _) :- !.
+goodenough([], _, _, Pos, Val, Pos, Val, _, _, _) :- !.
 
-goodenough(_, Alpha, Beta, Pos, Val, Pos, Val, _) :-
+goodenough(_, Alpha, Beta, Pos, Val, Pos, Val, _, _, _) :-
     min_to_move(Pos), Val > Beta, !;
     max_to_move(Pos), Val < Alpha, !.
 
-goodenough(PosList, Alpha, Beta, Pos, Val, GoodPos, GoodVal, Depth) :-
+goodenough(PosList, Alpha, Beta, Pos, Val, GoodPos, GoodVal, Depth, TimeStamp, TimeLimit) :-
     newbounds(Alpha, Beta, Pos, Val, NewAlpha, NewBeta),
-    boundedbest(PosList, NewAlpha, NewBeta, Pos1, Val1, Depth),
+    boundedbest(PosList, NewAlpha, NewBeta, Pos1, Val1, Depth, TimeStamp, TimeLimit),
     betterof(Pos, Val, Pos1, Val1, GoodPos, GoodVal).
 
 newbounds(Alpha, Beta, Pos, Val, Val, Beta) :-

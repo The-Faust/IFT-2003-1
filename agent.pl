@@ -23,12 +23,23 @@
 % L'agent choisit de jouer dans (Row, Col):
 agent(Board, Player, Move) :-
 	other(Player, LastPlayer),
-	% Algorithme Minimax:
-%	minimax(Board-LastPlayer-nil, _-_-Move, _).
-	% Algorithme Alpha-Bêta:
-%	alphabeta(Board-LastPlayer-nil, -inf, inf, _-_-Move, _).
-	% Algorithme Alpha-Bêta avec heuristique (profodeur de recherche limitée):
-	alphabeta_heuristic(Board-LastPlayer-nil, -inf, inf, _-_-Move, _, 4).
+	(
+		% Vérifie s'il est possible de gagner sur ce tour:
+%		winning_move(Board, Player, Move)
+%		;
+%		% Vérifie s'il est possible de perdre au prochain tour:
+%		winning_move(Board, LastPlayer, Move)
+%		;
+		% Algorithme Minimax:
+%		minimax(Board-LastPlayer-nil, _-_-Move, _).
+		% Algorithme Alpha-Bêta:
+%		alphabeta(Board-LastPlayer-nil, -inf, inf, _-_-Move, _).
+		% Algorithme Alpha-Bêta avec heuristique (profodeur de recherche limitée):
+		get_time(Time),
+		alphabeta_heuristic(Board-LastPlayer-nil, -inf, inf, NewBoard-_-Move, _, 3, Time, 1),
+		heuristicval(NewBoard-_-_, Value),
+		writeln(Value)
+	).
 
 % Établi les transitions possibles à partir d'un état:
 moves(Board-LastPlayer-_, PosList) :-
@@ -64,6 +75,29 @@ heuristicval(Board-_-_, Value) :-
 	heuristic_score(Board, Value).
 
 % Établi à qui appartient le tour:
-min_to_move(_-n-_).
-max_to_move(_-b-_).
-max_to_move(_-nil-_).
+min_to_move(_-n-_).   % -> au joueur blanc (il est précédé par le joueur noir).
+max_to_move(_-b-_).   % -> au joueur noir (il est précédé par le joueur blanc).
+max_to_move(_-nil-_). % -> au joueur noir (il est le premier à jouer).
+
+% Vérifie s'il est possible pour le joueur de gagner en un tour:
+winning_move(Board, Player, Move) :-
+	get_goal(Goal),
+	cell_is_empty(Board, Move),
+	set_cell_content(Board, Move, Player, NewBoard),
+	evaluate_score(NewBoard, Player, Score),
+	Score >= Goal.
+
+% Permet de créer l'empreinte d'un état:
+hash_pos(Board-_-_, Hash) :-
+	hash_function(Board, Hash).
+
+% Permet de créer l'empreinte d'une configuration du plateau:
+hash_function(Board, Hash) :-
+	flatten(Board, GridString),
+	hash_function(GridString, 0, Hash).
+hash_function([], Hash, Hash).
+hash_function([C|Cs], Acc, Hash) :-
+	char_code(C, Code),
+	NewAcc is ((Acc << 5) - Acc) + Code,
+	hash_function(Cs, NewAcc, Hash).
+	

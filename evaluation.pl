@@ -156,19 +156,22 @@ heuristic_score(Board, TotalScore) :-
 				line_score(Line, Score)),
 				DiagonalLinesUpScores),
 	!,
-	flatten([HorizontalLinesScores, VerticalLinesScores, DiagonalLinesDownScores, DiagonalLinesUpScores], Scores),
+	flatten([HorizontalLinesScores,
+			 VerticalLinesScores,
+			 DiagonalLinesDownScores,
+			 DiagonalLinesUpScores], Scores),
 	sum_list(Scores, TotalScore).
-	
+
 line_score(Line, Score) :-
 	get_goal(Goal),
 	sliding_window(Goal, Line, Scores),
 	sum_list(Scores, Score).
-	
+
 sliding_window(WindowSize, Line, Scores) :-
 	length(Line, Len),
 	Len >= WindowSize,
 	sliding_window(WindowSize, Line, 1, Len, Scores), !.
-	
+
 sliding_window(WindowSize, _, I, Len, []) :-
 	I + WindowSize - 1 > Len.
 sliding_window(WindowSize, Line, I, Len, [Score|Scores]) :-
@@ -176,19 +179,20 @@ sliding_window(WindowSize, Line, I, Len, [Score|Scores]) :-
 	eval_window_score(Bs-Ns, Score),
 	I1 is I + 1,
 	sliding_window(WindowSize, Line, I1, Len, Scores).
-	
+
 window_score(0, _, _, 0, 0).
 window_score(WindowSize, Line, I, Bs, Ns) :-
 	WindowSize > 0,
-	N1 is WindowSize - 1,
+	WindowSize_1 is WindowSize - 1,
 	nth1(I, Line, X),
 	I1 is I + 1,
-	window_score(N1, Line, I1, Bs1, Ns1),
+	window_score(WindowSize_1, Line, I1, Bs1, Ns1),
 	(   X = b -> Bs is Bs1 + 1 ; Bs = Bs1 ),
 	(   X = n -> Ns is Ns1 + 1 ; Ns = Ns1 ).
-	
-eval_window_score(B-0, Value) :- Value is -12**B.
-eval_window_score(0-N, Value) :- Value is 12**N.
+
+eval_window_score(0-0, 0).
+eval_window_score(B-0, Value) :- Value is -(10**(B - 1)).
+eval_window_score(0-N, Value) :- Value is (10**(N - 1)).
 eval_window_score(_, 0).
 
 % Vérifie si la partie est terminée:
