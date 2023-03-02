@@ -11,7 +11,7 @@
 %   Hiver 2023
 
 %===========================================%
-%            Évaluation du score.           %
+%       Évaluation statique du score.       %
 %===========================================%
 
 
@@ -29,13 +29,13 @@ get_goal(Goal) :-
 	goal(Goal).
 
 % Récupère l'alignement de jetons le plus long mémoïsé pour un joueur:
-evaluate_score(Board, Player, BestScore) :-
+static_score(Board, Player, BestScore) :-
 	member(Player, [n, b]),
 	memo_score(Board, Player, BestScore),
 	!.
 
 % Évalue le score d'un joueur, soit l'alignement de jetons le plus long:
-evaluate_score(Board, Player, Score) :-
+static_score(Board, Player, Score) :-
 	member(Player, [n, b]),
 	get_last_index(Board, LastIndex),
 	LastIndex_1 is LastIndex - 1,
@@ -113,93 +113,20 @@ check_direction(Board, Player, R-C, StepR-StepC, Streak, PreviousLongestStreak, 
 	).
 check_direction(_, _, _, _, _, PreviousLongestStreak, PreviousLongestStreak).
 
-% Évalue le score heuristique:
-heuristic_score(Board, TotalScore) :-
+% Vérifie s'il est possible pour le joueur de gagner en un tour:
+winning_move(Board, Player, Move) :-
 	get_goal(Goal),
-	get_last_index(Board, LastIndex),
-	get_horizontal_lines(Board, HorizontalLines),
-	get_vertical_lines(Board, VerticalLines),
-	findall(Score,
-				(member(Line, HorizontalLines),
-				line_score(Line, Score)),
-				HorizontalLinesScores),
-	findall(Score,
-				(member(Line, VerticalLines),
-				line_score(Line, Score)),
-				VerticalLinesScores),
-	M is Goal - 1,
-	N is LastIndex - M,
-	findall(Score,
-				(between(0, N, R),
-				between(0, N, C),
-				(
-					(R = 0 ; C = 0) ->
-					true
-					;
-					(R = 0)
-					;
-					(C = 0)
-				),
-				get_line(Board, R-C, 1-1, [], Line),
-				line_score(Line, Score)),
-				DiagonalLinesDownScores),
-	findall(Score,
-				(between(M, LastIndex, R),
-				between(0, N, C),
-				(
-					(R = LastIndex ; C = 0) ->
-					true
-					;
-					(R = LastIndex)
-					;
-					(C = 0)
-				),
-				get_line(Board, R-C, -1-1, [], Line),
-				line_score(Line, Score)),
-				DiagonalLinesUpScores),
-	!,
-	flatten([HorizontalLinesScores, VerticalLinesScores, DiagonalLinesDownScores, DiagonalLinesUpScores], Scores),
-	sum_list(Scores, TotalScore).
-
-line_score(Line, Score) :-
-	get_goal(Goal),
-	findall(Value, (
-		Goal2 is Goal + 2,
-		between(1, Goal2, L),
-		member(P-S, [n-1, b-(-1)]),
-		phrase(fixed_open_rep(P, L, Goal2), Line),
-		value(L, o, V),
-		Value is S * V
-	), OpenVals),
-	findall(Value, (
-		Goal1 is Goal + 1,
-		between(2, Goal1, L),
-		member(P-S, [n-1, b-(-1)]),
-		phrase(fixed_closed_rep(P, L, Goal1), Line),
-		value(L, c, V),
-		Value is S * V
-	), ClosedVals),
-	findall(Value, (
-		member(P-S, [n-1, b-(-1)]),
-		phrase(full_rep(P, Goal), Line),
-		value(Goal, f, V),
-		Value is S * V
-	), FullVals),
-	flatten([OpenVals, ClosedVals, FullVals], Values),
-	sum_list(Values, Score).
-
-value(1, o, 0.01) :- !.
-value(Goal_1, o, Value) :- get_goal(Goal), Goal_1 is Goal - 1, Value is (4**Goal_1) + 999999, !.
-value(L, o, Value) :- Value is (4**L), !.
-value(Goal_1, c, Value) :- get_goal(Goal), Goal_1 is Goal - 1, Value is ((4**Goal_1) + 1000000)/2, !.
-value(L, c, Value) :- Value is (4**(L - 1)), !.
-value(L, f, Value) :- Value is (4**L) + 1000000, !.
+	cell_is_empty(Board, Move),
+	set_cell_content(Board, Move, Player, NewBoard),
+	static_score(NewBoard, Player, Score),
+	Score >= Goal.
 
 % Vérifie si la partie est terminée:
 game_over(Board, Winner) :-
 	get_goal(Goal),
 	member(Winner, [n, b]),
-	evaluate_score(Board, Winner, Score),
+	static_score(Board, Winner, Score),
 	Score >= Goal, !
 	;
 	not(has_an_empty_cell(Board)) -> Winner = nil.
+	

@@ -17,7 +17,7 @@
 %===========================================%
 
 
-:- [evaluation].
+:- [static_evaluation].
 
 :- begin_tests(evaluation).
 
@@ -26,8 +26,8 @@ test(evaluate_score_3x3_empty) :-
 			 [v,v,v],
 			 [v,v,v]],
 	
-	evaluate_score(Board, b, BestScoreB),
-	evaluate_score(Board, n, BestScoreN),
+	static_score(Board, b, BestScoreB),
+	static_score(Board, n, BestScoreN),
 	
 	assertion(BestScoreB = 0),
 	assertion(BestScoreN = 0).
@@ -37,8 +37,8 @@ test(evaluate_score_3x3_one_each) :-
 			 [v,v,v],
 			 [b,v,v]],
 	
-	evaluate_score(Board, b, BestScoreB),
-	evaluate_score(Board, n, BestScoreN),
+	static_score(Board, b, BestScoreB),
+	static_score(Board, n, BestScoreN),
 	
 	assertion(BestScoreB = 1),
 	assertion(BestScoreN = 1).
@@ -48,8 +48,8 @@ test(evaluate_score_3x3_two_each) :-
 			 [n,v,v],
 			 [n,v,v]],
 	
-	evaluate_score(Board, b, BestScoreB),
-	evaluate_score(Board, n, BestScoreN),
+	static_score(Board, b, BestScoreB),
+	static_score(Board, n, BestScoreN),
 	
 	assertion(BestScoreB = 2),
 	assertion(BestScoreN = 2).
@@ -59,8 +59,8 @@ test(evaluate_score_3x3_horizontal) :-
 			 [v,v,v],
 			 [n,n,n]],
 	
-	evaluate_score(Board, b, BestScoreB),
-	evaluate_score(Board, n, BestScoreN),
+	static_score(Board, b, BestScoreB),
+	static_score(Board, n, BestScoreN),
 	
 	assertion(BestScoreB = 3),
 	assertion(BestScoreN = 3).
@@ -70,8 +70,8 @@ test(evaluate_score_3x3_vertical) :-
 			 [b,v,n],
 			 [b,v,n]],
 	
-	evaluate_score(Board, b, BestScoreB),
-	evaluate_score(Board, n, BestScoreN),
+	static_score(Board, b, BestScoreB),
+	static_score(Board, n, BestScoreN),
 	
 	assertion(BestScoreB = 3),
 	assertion(BestScoreN = 3).
@@ -81,8 +81,8 @@ test(evaluate_score_3x3_diagonal_1) :-
 			 [v,b,v],
 			 [n,v,b]],
 	
-	evaluate_score(Board, b, BestScoreB),
-	evaluate_score(Board, n, BestScoreN),
+	static_score(Board, b, BestScoreB),
+	static_score(Board, n, BestScoreN),
 	
 	assertion(BestScoreB = 3),
 	assertion(BestScoreN = 1).
@@ -92,8 +92,8 @@ test(evaluate_score_3x3_diagonal_2) :-
 			 [v,n,v],
 			 [n,v,b]],
 	
-	evaluate_score(Board, b, BestScoreB),
-	evaluate_score(Board, n, BestScoreN),
+	static_score(Board, b, BestScoreB),
+	static_score(Board, n, BestScoreN),
 	
 	assertion(BestScoreB = 1),
 	assertion(BestScoreN = 3).
@@ -105,8 +105,8 @@ test(evaluate_score_5x5) :-
 			 [v,n,v,b,v],
 			 [n,v,b,v,v]],
 
-	evaluate_score(Board, b, BestScoreB),
-	evaluate_score(Board, n, BestScoreN),
+	static_score(Board, b, BestScoreB),
+	static_score(Board, n, BestScoreN),
 	
 	assertion(BestScoreB = 3),
 	assertion(BestScoreN = 4).

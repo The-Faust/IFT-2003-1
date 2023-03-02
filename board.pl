@@ -228,3 +228,16 @@ occurrences(Sublist, Count0, Count) -->
     occurrences(Sublist, Count0, Count).
     
 occurrences(_, Count, Count) --> !.
+
+% Permet de créer l'empreinte d'une configuration du plateau:
+hash_function(Board, Hash) :-
+  flatten(Board, GridString),
+  hash_function(GridString, 0, Hash).
+  
+hash_function([], Hash, Hash).
+
+hash_function([C|Cs], Acc, Hash) :-
+  char_code(C, Code),
+  NewAcc is ((Acc << 5) - Acc) + Code,
+  hash_function(Cs, NewAcc, Hash).
+  

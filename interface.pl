@@ -15,8 +15,8 @@
 %===========================================%
 
 
-:- [evaluation].
 :- [board].
+:- [static_evaluation].
 
 % Identifiants du contenu d'une case:
 cell_to_char(v, '┼').   % Case vide (v).
@@ -56,18 +56,25 @@ set_gomoku_board(Board) :-
 
 % Demande au joueur la couleur qu'il veut jouer:
 request_players_color :-
-	write('Quelle couleur voulez-vous jouer? (n: noir ●, b: blanc ◯)\nLe pion noir débute la partie.\n'),
+	writeln('Quelle couleur voulez-vous jouer? (n: noir ●, b: blanc ◯)'),
+	writeln('Le pion noir débute la partie.'),
+	writeln('Appuyer sur la touche Entrée pour un duel IA vs IA.'),
 	repeat,
 	read_line_to_string(user_input, Input),
-	string_lower(Input, Input_Lower),
-	atom_string(Color, Input_Lower),
 	(
-		member(Color, [b, n]) ->
-		assertz(player(Color)),
-		true
+		Input = "" ->
+		assertz(player(nil))
 		;
-		write('Vous devez choisir une couleur entre b et n.\n'),
-		fail
+		string_lower(Input, Input_Lower),
+		atom_string(Color, Input_Lower),
+		(
+			member(Color, [b, n]) ->
+			assertz(player(Color)),
+			true
+			;
+			write('Vous devez choisir une couleur entre b et n.\n'),
+			fail
+		)
 	).
 
 % Demande à l'utilisateur d'entrer un un nombre entre Min et Max, inclusivement:
@@ -143,7 +150,7 @@ introduce_turn(Player) :-
 % Affiche le résultat du tour qui termine:
 conclude_turn(Board, Player, NextPlayer) :-
 	display_gomoku_board(Board),
-	evaluate_score(Board, Player, Score),
+	static_score(Board, Player, Score),
 	players_name(Player, PlayersName),
 	cell_to_char(Player, PlayersSymbol),
 	format('Score du joueur ~w (~w): ~d\n', [PlayersName, PlayersSymbol, Score]),
