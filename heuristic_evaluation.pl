@@ -18,7 +18,12 @@
 :- [board].
 :- [static_evaluation].
 
-:- dynamic memo_score/3.	% Mémoïsation du score pour une configuration.
+:- dynamic memo_score/2.	% Mémoïsation du score pour une configuration.
+
+% Récupère l'alignement de jetons le plus long mémoïsé pour un joueur:
+heuristic_score(Board, TotalScore) :-
+	memo_score(Board, TotalScore),
+	!.
 
 % Évalue le score heuristique:
 heuristic_score(Board, TotalScore) :-
@@ -66,7 +71,8 @@ heuristic_score(Board, TotalScore) :-
 				DiagonalLinesUpScores),
 	!,
 	flatten([HorizontalLinesScores, VerticalLinesScores, DiagonalLinesDownScores, DiagonalLinesUpScores], Scores),
-	sum_list(Scores, TotalScore).
+	sum_list(Scores, TotalScore),
+	assertz(memo_score(Board, TotalScore)).
 
 % Évalue le score pour une ligne donnée:
 line_score(Line, Score) :-
@@ -98,8 +104,8 @@ line_score(Line, Score) :-
 
 % Établi la valeur d'une séquence selon le type (o: ouverte, c: fermée, f: complète):
 value(1, o, 0.01) :- !.
-value(Goal_1, o, Value) :- get_goal(Goal), Goal_1 is Goal - 1, Value is (4**Goal_1) + 999999, !.
-value(L, o, Value) :- Value is (4**L), !.
-value(Goal_1, c, Value) :- get_goal(Goal), Goal_1 is Goal - 1, Value is ((4**Goal_1) + 1000000)/2, !.
-value(L, c, Value) :- Value is (4**(L - 1)), !.
-value(L, f, Value) :- Value is (4**L) + 1000000, !.
+value(Goal_1, o, Value) :- get_goal(Goal), Goal_1 is Goal - 1, Value is (4**(Goal_1**2)) + 999999, !.
+value(L, o, Value) :- Value is (4**(L**2)), !.
+value(Goal_1, c, Value) :- get_goal(Goal), Goal_1 is Goal - 1, Value is ((4**(Goal_1**2)) + 1000000)/2, !.
+value(L, c, Value) :- Value is (4**((L - 1)**2)), !.
+value(L, f, Value) :- Value is (4**(L**2)) + 1000000, !.

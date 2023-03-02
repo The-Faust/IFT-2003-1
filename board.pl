@@ -240,4 +240,3 @@ hash_function([C|Cs], Acc, Hash) :-
   char_code(C, Code),
   NewAcc is ((Acc << 5) - Acc) + Code,
   hash_function(Cs, NewAcc, Hash).
-  

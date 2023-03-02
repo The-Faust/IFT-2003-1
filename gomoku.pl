@@ -118,4 +118,3 @@ tictactoe_auto :-
 	create_gomoku_board(N, Board),
 	display_gomoku_board(Board),
 	turn(Board, Firstplayer, _).
-	
