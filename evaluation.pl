@@ -20,9 +20,11 @@
 :- dynamic memo_score/3.	% Mémoïsation du score pour une configuration.
 :- dynamic goal/1.  		% Nombre de pions à aligner pour gagner.
 
+% Assigne un but (nombre de pions à aligner):
 set_goal(Goal) :-
 	assertz(goal(Goal)).
 
+% Récupère le but:
 get_goal(Goal) :-
 	goal(Goal).
 
@@ -126,7 +128,7 @@ heuristic_score(Board, TotalScore) :-
 				line_score(Line, Score)),
 				VerticalLinesScores),
 	M is Goal - 1,
-	N is LastIndex - Goal + 1,
+	N is LastIndex - M,
 	findall(Score,
 				(between(0, N, R),
 				between(0, N, C),
@@ -156,44 +158,42 @@ heuristic_score(Board, TotalScore) :-
 				line_score(Line, Score)),
 				DiagonalLinesUpScores),
 	!,
-	flatten([HorizontalLinesScores,
-			 VerticalLinesScores,
-			 DiagonalLinesDownScores,
-			 DiagonalLinesUpScores], Scores),
+	flatten([HorizontalLinesScores, VerticalLinesScores, DiagonalLinesDownScores, DiagonalLinesUpScores], Scores),
 	sum_list(Scores, TotalScore).
 
 line_score(Line, Score) :-
 	get_goal(Goal),
-	sliding_window(Goal, Line, Scores),
-	sum_list(Scores, Score).
+	findall(Value, (
+		Goal2 is Goal + 2,
+		between(1, Goal2, L),
+		member(P-S, [n-1, b-(-1)]),
+		phrase(fixed_open_rep(P, L, Goal2), Line),
+		value(L, o, V),
+		Value is S * V
+	), OpenVals),
+	findall(Value, (
+		Goal1 is Goal + 1,
+		between(2, Goal1, L),
+		member(P-S, [n-1, b-(-1)]),
+		phrase(fixed_closed_rep(P, L, Goal1), Line),
+		value(L, c, V),
+		Value is S * V
+	), ClosedVals),
+	findall(Value, (
+		member(P-S, [n-1, b-(-1)]),
+		phrase(full_rep(P, Goal), Line),
+		value(Goal, f, V),
+		Value is S * V
+	), FullVals),
+	flatten([OpenVals, ClosedVals, FullVals], Values),
+	sum_list(Values, Score).
 
-sliding_window(WindowSize, Line, Scores) :-
-	length(Line, Len),
-	Len >= WindowSize,
-	sliding_window(WindowSize, Line, 1, Len, Scores), !.
-
-sliding_window(WindowSize, _, I, Len, []) :-
-	I + WindowSize - 1 > Len.
-sliding_window(WindowSize, Line, I, Len, [Score|Scores]) :-
-	window_score(WindowSize, Line, I, Bs, Ns),
-	eval_window_score(Bs-Ns, Score),
-	I1 is I + 1,
-	sliding_window(WindowSize, Line, I1, Len, Scores).
-
-window_score(0, _, _, 0, 0).
-window_score(WindowSize, Line, I, Bs, Ns) :-
-	WindowSize > 0,
-	WindowSize_1 is WindowSize - 1,
-	nth1(I, Line, X),
-	I1 is I + 1,
-	window_score(WindowSize_1, Line, I1, Bs1, Ns1),
-	(   X = b -> Bs is Bs1 + 1 ; Bs = Bs1 ),
-	(   X = n -> Ns is Ns1 + 1 ; Ns = Ns1 ).
-
-eval_window_score(0-0, 0).
-eval_window_score(B-0, Value) :- Value is -(10**(B - 1)).
-eval_window_score(0-N, Value) :- Value is (10**(N - 1)).
-eval_window_score(_, 0).
+value(1, o, 0.01) :- !.
+value(Goal_1, o, Value) :- get_goal(Goal), Goal_1 is Goal - 1, Value is (4**Goal_1) + 999999, !.
+value(L, o, Value) :- Value is (4**L), !.
+value(Goal_1, c, Value) :- get_goal(Goal), Goal_1 is Goal - 1, Value is ((4**Goal_1) + 1000000)/2, !.
+value(L, c, Value) :- Value is (4**(L - 1)), !.
+value(L, f, Value) :- Value is (4**L) + 1000000, !.
 
 % Vérifie si la partie est terminée:
 game_over(Board, Winner) :-

@@ -36,9 +36,7 @@ agent(Board, Player, Move) :-
 %		alphabeta(Board-LastPlayer-nil, -inf, inf, _-_-Move, _).
 		% Algorithme Alpha-Bêta avec heuristique (profodeur de recherche limitée):
 		get_time(Time),
-		alphabeta_heuristic(Board-LastPlayer-nil, -inf, inf, NewBoard-_-Move, _, 3, Time, 1),
-		heuristicval(NewBoard-_-_, Value),
-		writeln(Value)
+		alphabeta_heuristic(Board-LastPlayer-nil, -inf, inf, _-_-Move, _, 1, Time, 1.5)
 	).
 
 % Établi les transitions possibles à partir d'un état:
