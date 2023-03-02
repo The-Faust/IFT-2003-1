@@ -17,8 +17,8 @@
 
 :- [board].
 
-:- dynamic memo_score/3.	% Mémoïsation du score pour une configuration.
-:- dynamic goal/1.  		% Nombre de pions à aligner pour gagner.
+:- dynamic memo_static_score/4.	% Mémoïsation du score pour une configuration.
+:- dynamic goal/1.  			% Nombre de pions à aligner pour gagner.
 
 % Assigne un but (nombre de pions à aligner):
 set_goal(Goal) :-
@@ -31,7 +31,9 @@ get_goal(Goal) :-
 % Récupère l'alignement de jetons le plus long mémoïsé pour un joueur:
 static_score(Board, Player, BestScore) :-
 	member(Player, [n, b]),
-	memo_score(Board, Player, BestScore),
+	get_goal(Goal),
+	hash_function(Board, Hash),
+	memo_static_score(Hash, Goal, Player, BestScore),
 	!.
 
 % Évalue le score d'un joueur, soit l'alignement de jetons le plus long:
@@ -84,7 +86,9 @@ static_score(Board, Player, Score) :-
 	!,
 	flatten([HorizontalStreaks, VerticalStreaks, DiagonalDownStreaks, DiagonalUpStreaks], Streaks),
 	max_list(Streaks, Score),
-	assertz(memo_score(Board, Player, Score)).
+	get_goal(Goal),
+	hash_function(Board, Hash),
+	assertz(memo_static_score(Hash, Goal, Player, Score)).
 
 % Évalue l'alignement de jetons le plus long dans une direction donnée à partir c'une case:
 check_direction(Board, Player, R-C, StepR-StepC, Streak, PreviousLongestStreak, LongestStreak) :-

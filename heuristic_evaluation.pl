@@ -18,11 +18,13 @@
 :- [board].
 :- [static_evaluation].
 
-:- dynamic memo_score/2.	% Mémoïsation du score pour une configuration.
+:- dynamic memo_heuristic_score/3.	% Mémoïsation du score pour une configuration.
 
 % Récupère l'alignement de jetons le plus long mémoïsé pour un joueur:
 heuristic_score(Board, TotalScore) :-
-	memo_score(Board, TotalScore),
+	get_goal(Goal),
+	hash_function(Board, Hash),
+	memo_heuristic_score(Hash, Goal, TotalScore),
 	!.
 
 % Évalue le score heuristique:
@@ -72,7 +74,8 @@ heuristic_score(Board, TotalScore) :-
 	!,
 	flatten([HorizontalLinesScores, VerticalLinesScores, DiagonalLinesDownScores, DiagonalLinesUpScores], Scores),
 	sum_list(Scores, TotalScore),
-	assertz(memo_score(Board, TotalScore)).
+	hash_function(Board, Hash),
+	assertz(memo_heuristic_score(Hash, Goal, TotalScore)).
 
 % Évalue le score pour une ligne donnée:
 line_score(Line, Score) :-

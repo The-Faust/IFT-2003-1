@@ -74,47 +74,62 @@ turn(Board, Player, NewBoard) :-
 
 % Démarre le jeu avec paramétrage:
 play :-
-	Firstplayer = n,
-	set_gomoku_board(Board),
-	request_goal(Board),
+	set_board_size(BoardSize),
+	request_goal(BoardSize, Goal),
 	request_players_color,
-	display_gomoku_board(Board),
+	begin_game(Firstplayer, Goal, BoardSize, Board),
 	turn(Board, Firstplayer, _).
 
 % Démarre le jeu selon les paramètres typiques:
 gomoku :-
-	Firstplayer = n,
-	N is 19,
-	set_goal(5),
-	create_gomoku_board(N, Board),
 	request_players_color,
-	display_gomoku_board(Board),
+	begin_game(Firstplayer, 5, 19, Board),
 	turn(Board, Firstplayer, _).
 
 % Partie de Gomoku AI vs AI:
 gomoku_auto :-
-	Firstplayer = n,
-	N is 19,
-	set_goal(5),
-	create_gomoku_board(N, Board),
-	display_gomoku_board(Board),
+	begin_game(Firstplayer, 5, 19, Board),
 	turn(Board, Firstplayer, _).
 
 % Implémentation de Tic-Tac-Toe (bonus):
 tictactoe :-
-	Firstplayer = n,
-	N is 3,
-	set_goal(3),
-	create_gomoku_board(N, Board),
 	request_players_color,
-	display_gomoku_board(Board),
+	begin_game(Firstplayer, 3, 3, Board),
 	turn(Board, Firstplayer, _).
 
 % Partie de Tic-Tac-Toe AI vs AI (bonus):
 tictactoe_auto :-
-	Firstplayer = n,
-	N is 3,
-	set_goal(3),
-	create_gomoku_board(N, Board),
-	display_gomoku_board(Board),
+	begin_game(Firstplayer, 3, 3, Board),
 	turn(Board, Firstplayer, _).
+
+% Établi la routine de début de partie:
+begin_game(Firstplayer, Goal, BoardSize, Board) :-
+	set_goal(Goal),
+	create_gomoku_board(BoardSize, Board),
+	display_gomoku_board(Board),
+	Firstplayer = n,
+	load_cache.
+
+% Établi la routine de fin de partie:
+end_game :-
+	save_cache,
+	break.
+
+% Permet de sauvegarder les calculs effectués:
+save_cache :-
+	tell('evaluations.cache'),
+	listing([memo_static_score, memo_heuristic_score]),
+	told.
+
+% Permet de charger les calculs effectués:
+load_cache :-
+	(
+		exists_file('evaluations.cache') ->
+		(
+			retractall(memo_static_score(_)),
+			retractall(memo_heuristic_score(_)),
+			consult('evaluations.cache')
+		)
+		;
+		true
+	).

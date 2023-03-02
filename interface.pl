@@ -48,11 +48,19 @@ display_gomoku_board(Board) :-
 	nl.
 	
 % Établi le plateau de jeu selon des paramètres fournis:
-set_gomoku_board(Board) :-
+set_board_size(N) :-
 	% Demande à l'utilisateur la taille (N), du plateau de jeu composé du grillage N×N:
-	request_valid_integer(3, 26, 'Choisissez la taille du jeu: (min: 3, max: 26)', N),
-	% Produit le plateau de jeu de dimensions N×N avec des cases vides (v):
-	create_gomoku_board(N, Board).
+	request_valid_integer(3, 26, 'Choisissez la taille du jeu: (min: 3, max: 26)', N).
+
+% Demande à l'utilisateur le nombre de jetons à aligner pour gagner:
+request_goal(N, Goal) :-
+	(
+		N > 3 ->
+		format(atom(Prompt), 'Choisissez l\'objectif, soit le nombre de jetons à aligner: (min: 3, max: ~d)', N),
+		request_valid_integer(3, N, Prompt, Goal)
+		;
+		Goal is 3
+	).
 
 % Demande au joueur la couleur qu'il veut jouer:
 request_players_color :-
@@ -124,18 +132,6 @@ request_next_move(Board, Move) :-
 		fail
 	).
 
-% Demande à l'utilisateur le nombre de jetons à aligner pour gagner:
-request_goal(Board) :-
-	length(Board, N),
-	(
-		N > 3 ->
-		format(atom(Prompt), 'Choisissez l\'objectif, soit le nombre de jetons à aligner: (min: 3, max: ~d)', N),
-		request_valid_integer(3, N, Prompt, Goal),
-		set_goal(Goal)
-		;
-		set_goal(3)
-	).
-
 % Affiche une ligne de séparation:
 draw_line :-
 	write('────────────────────────────────────────────────────────────────────\n').
@@ -160,7 +156,7 @@ conclude_turn(Board, Player, NextPlayer) :-
 		(
 			draw_line,
 			format('Le joueur ~w (~w) gagne!\n', [PlayersName, PlayersSymbol]),
-			halt
+			end_game
 		)
 		;
 		true
@@ -171,4 +167,5 @@ conclude_turn(Board, Player, NextPlayer) :-
 display_tie :-
 	write('Le plateau de jeu est plein!\n'),
 	write('Il s\'agit d\'un impasse!\n'),
-	halt.
+	end_game.
+	
