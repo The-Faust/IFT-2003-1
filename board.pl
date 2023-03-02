@@ -15,7 +15,16 @@
 %===========================================%
 
 
-:- use_module(library(clpfd)).
+:- use_module(library(clpfd)). % Pour 'transpose'.
+
+% Prédicat qui permet d'alterner les joeurs:
+other(b, n).
+other(n, b).
+
+% Valeur numérique du contenu d'une case:
+cell_to_num(v, 1).   	% Case vide (v).
+cell_to_num(n, 2).   	% Case avec un pion noir (n).
+cell_to_num(b, 3).   	% Case avec un pion blanc (b).
 
 % Créer un plateau de jeu vierge de dimensions N×N:
 create_gomoku_board(N, Board) :-
@@ -237,6 +246,6 @@ hash_function(Board, Hash) :-
 hash_function([], Hash, Hash).
 
 hash_function([C|Cs], Acc, Hash) :-
-  char_code(C, Code),
-  NewAcc is ((Acc << 5) - Acc) + Code,
+  cell_to_num(C, Code),
+  NewAcc is ((Acc << 2) - Acc) + Code,
   hash_function(Cs, NewAcc, Hash).

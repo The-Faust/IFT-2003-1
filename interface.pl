@@ -18,10 +18,14 @@
 :- [board].
 :- [static_evaluation].
 
+% Identifiants du joueur:
+players_name(n, 'noir').    % Joueur noir (n).
+players_name(b, 'blanc').   % Joueur blanc (b).
+
 % Identifiants du contenu d'une case:
-cell_to_char(v, '┼').   % Case vide (v).
-cell_to_char(n, '●').   % Case avec un pion noir (n).
-cell_to_char(b, '◯').   % Case avec un pion blanc (b).
+cell_to_char(v, '┼').   	% Case vide (v).
+cell_to_char(n, '●').   	% Case avec un pion noir (n).
+cell_to_char(b, '◯').   	% Case avec un pion blanc (b).
 
 % Affiche le plateau de jeu:
 display_gomoku_board(Board) :-
