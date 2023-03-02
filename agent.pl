@@ -76,7 +76,3 @@ heuristicval(Board-_-_, Value) :-
 min_to_move(_-n-_).   % -> au joueur blanc (il est précédé par le joueur noir).
 max_to_move(_-b-_).   % -> au joueur noir (il est précédé par le joueur blanc).
 max_to_move(_-nil-_). % -> au joueur noir (il est le premier à jouer).
-
-% Permet de créer l'empreinte d'un état:
-hash_pos(Board-_-_, Hash) :-
-	hash_function(Board, Hash).
