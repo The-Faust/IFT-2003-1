@@ -27,15 +27,26 @@ cell_to_char(v, '┼').   	% Case vide (v).
 cell_to_char(n, '●').   	% Case avec un pion noir (n).
 cell_to_char(b, '◯').   	% Case avec un pion blanc (b).
 
+% Convertit un numéro de colonne en la lettre correspondante:
+column_nb_to_id(C, ID) :-
+	Code is C + 65, 	% Le caractère encodé en entier (65 = A, ..., Z = 90).
+	char_code(ID, Code).
+
+% Convertit un couple en coordonnées lisibles:
+coordinates_to_id(R-C, ID) :-
+	column_nb_to_id(C, ColID),
+	RowID is R + 1,
+	format(atom(ID), '~w~w', [ColID, RowID]).
+
 % Affiche le plateau de jeu:
 display_gomoku_board(Board) :-
-	length(Board, N),
+	get_last_index(Board, LastIndex),
 	write('   '),
 	forall(   % Itère sur le nom des colonnes.
-		between(1, N, X),
+		between(0, LastIndex, C),
 		(
-			ABC is 64 + X, % Le caractère encodé en entier (65 = A, ..., Z = 90).
-			format(' ~c', [ABC])
+			column_nb_to_id(C, ID),
+			format(' ~w', [ID])
 		)
 	),
 	nl,

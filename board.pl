@@ -75,6 +75,10 @@ has_an_empty_cell(Board) :-
     flatten(Board, Flat),
     memberchk(v, Flat).
 
+% Vérifie si toutes les cases d'une liste sont vides (contient v):
+contains_only_empty_cells(List) :-
+    \+ (member(Element, List), Element \= v).
+
 % Vérifie si les coordonnées existent sur le plateau:
 are_valid_coordinates(Board, Row-Col) :-
     get_last_index(Board, LastIndex),
@@ -181,45 +185,50 @@ is_a_sublist_index(SubList, List, Index) :-
 rep(S) --> [S] | [S], rep(S).
 
 % Défini une séquence du symbole S et de longueur L:
-rep(S, L) --> [S], {L is 1} | [S], { L_1 is L - 1 }, rep(S, L_1), !.
+rep(S, L) --> [], {L #= 0} | [S], {L #= 1} | [S], { L_1 #= L - 1 }, rep(S, L_1), !.
 
 % Défini une séquence du symbole S ouverte (v des deux côtés):
-open_rep(S) --> ..., [v], rep(S), [v], ... .
+open_rep(S) --> ..., [v], rep(S), [v], !, ... .
 
 % Défini une séquence du symbole S ouverte (v des deux côtés) et de longueur L:
-open_rep(S, L) --> ..., [v], rep(S, L), [v], ... .
+open_rep(S, L) --> ..., [v], rep(S, L), [v], !, ... .
 
 % Défini une séquence complète:
-full_rep(S, L) --> ..., rep(S, L), ... .
+full_rep(S, L) --> ..., rep(S, L), !, ... .
 
 % Défini une séquence du symbole S fermée (v d'un seul côté):
-closed_rep(S) --> { dif(S, P), dif(P, v) }, ..., [P], rep(S), [v], ... |
-                  { dif(S, P), dif(P, v) }, ..., [v], rep(S), [P], ... |
-                  rep(S), [v], ... | ..., [v], rep(S).
+closed_rep(S) --> { dif(S, P), dif(P, v) }, ..., [P], rep(S), [v], !, ... |
+                  { dif(S, P), dif(P, v) }, ..., [v], rep(S), [P], !, ... |
+                  rep(S), [v], !, ... | ..., [v], rep(S).
 
 % Défini une séquence du symbole S fermée (v d'un seul côté) et de longueur L:
-closed_rep(S, L) --> { dif(S, P), dif(P, v) }, ..., [P], rep(S, L), [v], ... |
-                     { dif(S, P), dif(P, v) }, ..., [v], rep(S, L), [P], ... |
-                     rep(S, L), [v], ... | ..., [v], rep(S, L).
+closed_rep(S, L) --> { dif(S, P), dif(P, v) }, ..., [P], rep(S, L), [v], !, ... |
+                     { dif(S, P), dif(P, v) }, ..., [v], rep(S, L), [P], !, ... |
+                     rep(S, L), [v], !, ... | ..., [v], rep(S, L).
 
 % Défini une séquence du symbole S ouverte (v des deux côtés):
-fixed_open_rep(S, T) --> { between(1, T, A), Temp is T - A, between(1, Temp, B), C is Temp - B },
-                         ..., rep(v, A), rep(S, B), rep(v, C), ... .
+fixed_open_rep(S, T) --> { between(1, T, A), Temp #= T - A, between(1, Temp, B), C #= Temp - B, C >= 1 },
+                         ..., rep(v, A), rep(S, B), rep(v, C), !, ... .
 
 % Défini une séquence du symbole S ouverte (v des deux côtés):
-fixed_open_rep(S, L, T) --> { Temp is T - L, between(1, Temp, A), B is T - A - L },
-                             ..., rep(v, A), rep(S, L), rep(v, B), ... .
+fixed_open_rep(S, L, T) --> { Temp #= T - L, between(1, Temp, A), B #= T - A - L, B >= 1 },
+                             ..., rep(v, A), rep(S, L), rep(v, B), !, ... .
+
+fixed_alt(S, L, a3) --> { L_1 #= L - 1, between(1, L_1, A), B #= L - A }, ..., [v], rep(S, A), [v], rep(S, B), [v], !, ... .
+fixed_alt(S, L, a2) --> { L_1 #= L - 1, between(1, L_1, A), B #= L - A }, ..., [v], rep(S, A), [v], rep(S, B), !, ... |
+                       { L_1 #= L - 1, between(1, L_1, A), B #= L - A }, ..., rep(S, A), [v], rep(S, B), [v], !, ... .
+fixed_alt(S, L, a1) --> { L_1 #= L - 1, between(1, L_1, A), B #= L - A }, ..., rep(S, A), [v], rep(S, B), !, ... .
 
 % Défini une séquence du symbole S fermée (v d'un seul côté):
-fixed_closed_rep(S, T) --> { dif(S, P), dif(P, v), between(1, T, A), B is T - A }, ..., [P], rep(S, A), rep(v, B), ... |
-                           { dif(S, P), dif(P, v), between(1, T, A), B is T - A }, ..., rep(v, A), rep(S, B), [P], ... |
-                           { between(1, T, A), B is T - A }, rep(S, A), rep(v, B), ... |
+fixed_closed_rep(S, T) --> { dif(S, P), dif(P, v), between(1, T, A), B is T - A }, ..., [P], rep(S, A), rep(v, B), !, ... |
+                           { dif(S, P), dif(P, v), between(1, T, A), B is T - A }, ..., rep(v, A), rep(S, B), [P], !, ... |
+                           { between(1, T, A), B is T - A }, rep(S, A), rep(v, B), !, ... |
                            { between(1, T, A), B is T - A }, ..., rep(v, A), rep(S, B).
 
 % Défini une séquence du symbole S fermée (v d'un seul côté):
-fixed_closed_rep(S, L, T) --> { dif(S, P), dif(P, v), A is T - L }, ..., [P], rep(S, L), rep(v, A), ... |
-                              { dif(S, P), dif(P, v), A is T - L }, ..., rep(v, A), rep(S, L), [P], ... |
-                              { A is T - L }, rep(S, L), rep(v, A), ... |
+fixed_closed_rep(S, L, T) --> { dif(S, P), dif(P, v), A is T - L }, ..., [P], rep(S, L), rep(v, A), !, ... |
+                              { dif(S, P), dif(P, v), A is T - L }, ..., rep(v, A), rep(S, L), [P], !, ... |
+                              { A is T - L }, rep(S, L), rep(v, A), !, ... |
                               { A is T - L }, ..., rep(v, A), rep(S, L).
 
 % Permet de compter le nombre d'occurences d'une sous-liste:
@@ -249,3 +258,4 @@ hash_function([C|Cs], Acc, Hash) :-
   cell_to_num(C, Code),
   NewAcc is ((Acc << 2) - Acc) + Code,
   hash_function(Cs, NewAcc, Hash).
+  

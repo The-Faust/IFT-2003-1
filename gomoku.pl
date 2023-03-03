@@ -65,12 +65,12 @@ begin_game(Firstplayer, Goal, BoardSize, Board) :-
 	set_goal(Goal),
 	create_gomoku_board(BoardSize, Board),
 	display_gomoku_board(Board),
-	Firstplayer = n,
-	load_cache.
+	Firstplayer = n.
+	%load_cache.
 
 % Établi la routine de fin de partie:
 end_game :-
-	save_cache,
+	%save_cache,
 	break.
 
 % Établi un tour complet et boucle jusqu'à ce que le jeu termine:

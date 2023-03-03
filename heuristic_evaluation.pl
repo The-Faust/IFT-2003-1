@@ -33,44 +33,76 @@ heuristic_score(Board, TotalScore) :-
 	get_last_index(Board, LastIndex),
 	get_horizontal_lines(Board, HorizontalLines),
 	get_vertical_lines(Board, VerticalLines),
-	findall(Score,
-				(member(Line, HorizontalLines),
-				line_score(Line, Score)),
-				HorizontalLinesScores),
-	findall(Score,
-				(member(Line, VerticalLines),
-				line_score(Line, Score)),
-				VerticalLinesScores),
 	M is Goal - 1,
 	N is LastIndex - M,
 	findall(Score,
-				(between(0, N, R),
-				between(0, N, C),
 				(
-					(R = 0 ; C = 0) ->
-					true
-					;
-					(R = 0)
-					;
-					(C = 0)
+					member(Line, HorizontalLines),
+					(
+						contains_only_empty_cells(Line) ->
+						Score is 0
+						;
+						line_score(Line, Score)
+					)
 				),
-				get_line(Board, R-C, 1-1, [], Line),
-				line_score(Line, Score)),
-				DiagonalLinesDownScores),
+				HorizontalLinesScores
+	),
 	findall(Score,
-				(between(M, LastIndex, R),
-				between(0, N, C),
 				(
-					(R = LastIndex ; C = 0) ->
-					true
-					;
-					(R = LastIndex)
-					;
-					(C = 0)
+					member(Line, VerticalLines),
+					(
+						contains_only_empty_cells(Line) ->
+						Score is 0
+						;
+						line_score(Line, Score)
+					)
 				),
-				get_line(Board, R-C, -1-1, [], Line),
-				line_score(Line, Score)),
-				DiagonalLinesUpScores),
+				VerticalLinesScores
+	),
+	findall(Score,
+				(
+					between(0, N, R),
+					between(0, N, C),
+					(
+						(R = 0 ; C = 0) ->
+						true
+						;
+						(R = 0)
+						;
+						(C = 0)
+					),
+					get_line(Board, R-C, 1-1, [], Line),
+					(
+						contains_only_empty_cells(Line) ->
+						Score is 0
+						;
+						line_score(Line, Score)
+					)
+				),
+				DiagonalLinesDownScores
+	),
+	findall(Score,
+				(
+					between(M, LastIndex, R),
+					between(0, N, C),
+					(
+						(R = LastIndex ; C = 0) ->
+						true
+						;
+						(R = LastIndex)
+						;
+						(C = 0)
+					),
+					get_line(Board, R-C, -1-1, [], Line),
+					(
+						contains_only_empty_cells(Line) ->
+						Score is 0
+						;
+						line_score(Line, Score)
+					)
+				),
+				DiagonalLinesUpScores
+	),
 	!,
 	flatten([HorizontalLinesScores, VerticalLinesScores, DiagonalLinesDownScores, DiagonalLinesUpScores], Scores),
 	sum_list(Scores, TotalScore),
@@ -84,15 +116,15 @@ line_score(Line, Score) :-
 		Goal2 is Goal + 2,
 		between(1, Goal2, L),
 		member(P-S, [n-1, b-(-1)]),
-		phrase(fixed_open_rep(P, L, Goal2), Line),
+		L2 is L + 2,
+		phrase(fixed_open_rep(P, L, max(Goal, L2)), Line),
 		value(L, o, V),
 		Value is S * V
 	), OpenVals),
 	findall(Value, (
-		Goal1 is Goal + 1,
-		between(2, Goal1, L),
+		between(2, Goal, L),
 		member(P-S, [n-1, b-(-1)]),
-		phrase(fixed_closed_rep(P, L, Goal1), Line),
+		phrase(fixed_closed_rep(P, L, Goal), Line),
 		value(L, c, V),
 		Value is S * V
 	), ClosedVals),
@@ -102,13 +134,24 @@ line_score(Line, Score) :-
 		value(Goal, f, V),
 		Value is S * V
 	), FullVals),
-	flatten([OpenVals, ClosedVals, FullVals], Values),
+	findall(Value, (
+		Goal_1 is Goal - 1,
+		member(P-S, [n-1, b-(-1)]),
+		phrase(fixed_alt(P, Goal_1, F), Line),
+		value(Goal_1, F, V),
+		Value is S * V
+	), OpenValsAlt),
+	!,
+	flatten([OpenVals, ClosedVals, FullVals, OpenValsAlt], Values),
 	sum_list(Values, Score).
 
 % Établi la valeur d'une séquence selon le type (o: ouverte, c: fermée, f: complète):
 value(1, o, 0.01) :- !.
-value(Goal_1, o, Value) :- get_goal(Goal), Goal_1 is Goal - 1, Value is (4**(Goal_1**2)) + 999999, !.
+value(Goal_1, o, Value) :- get_goal(Goal), Goal_1 is Goal - 1, Value is 4**(Goal_1**2), !.
 value(L, o, Value) :- Value is (4**(L**2)), !.
-value(Goal_1, c, Value) :- get_goal(Goal), Goal_1 is Goal - 1, Value is ((4**(Goal_1**2)) + 1000000)/2, !.
+value(Goal_1, c, Value) :- get_goal(Goal), Goal_1 is Goal - 1, Value is (4**(Goal_1**2))/2, !.
 value(L, c, Value) :- Value is (4**((L - 1)**2)), !.
-value(L, f, Value) :- Value is (4**(L**2)) + 1000000, !.
+value(L, f, Value) :- Value is 4**(L**2), !.
+value(L, a1, Value) :- Value is (4**(L**2))/2, !.
+value(L, a2, Value) :- Value is 2*(4**(L**2))/3, !.
+value(L, a3, Value) :- Value is 4**(L**2), !.
