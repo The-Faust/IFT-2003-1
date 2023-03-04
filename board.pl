@@ -181,55 +181,33 @@ is_a_sublist_index(SubList, List, Index) :-
 % Défini "n'importe quelle séquence" avec les points de suspension:
 ... --> [] | [_], ... .
 
-% Défini une séquence du symbole S:
-rep(S) --> [S] | [S], rep(S).
-
 % Défini une séquence du symbole S et de longueur L:
-rep(S, L) --> [], {L #= 0} | [S], {L #= 1} | [S], { L_1 #= L - 1 }, rep(S, L_1), !.
+repeat(S, L) --> [], {L #= 0} | [S], {L #= 1} | [S], { L_1 #= L - 1 }, repeat(S, L_1), !.
 
-% Défini une séquence du symbole S ouverte (v des deux côtés):
-open_rep(S) --> ..., [v], rep(S), [v], !, ... .
+% Défini une ligne complète:
+full_row(S, Goal) --> ..., repeat(S, Goal), !, ... .
 
-% Défini une séquence du symbole S ouverte (v des deux côtés) et de longueur L:
-open_rep(S, L) --> ..., [v], rep(S, L), [v], !, ... .
+% Défini une ligne ouverte des deux côtés (i.e. v-n-n-n-v):
+opened_row(S, L, T) --> { Temp #= T - L, between(1, Temp, A), B #= T - A - L, B >= 1 }, ..., repeat(v, A), repeat(S, L), repeat(v, B), !, ... .
 
-% Défini une séquence complète:
-full_rep(S, L) --> ..., rep(S, L), !, ... .
+% Défini une ligne discontinue et ouverte des deux côtés:
+semi_opened_row(S, L, s3) --> { L_1 #= L - 1, between(1, L_1, A), B #= L - A }, ..., [v], repeat(S, A), [v], repeat(S, B), [v], !, ... .
 
-% Défini une séquence du symbole S fermée (v d'un seul côté):
-closed_rep(S) --> { dif(S, P), dif(P, v) }, ..., [P], rep(S), [v], !, ... |
-                  { dif(S, P), dif(P, v) }, ..., [v], rep(S), [P], !, ... |
-                  rep(S), [v], !, ... | ..., [v], rep(S).
+% Défini une ligne discontinue et ouverte d'un côté:
+semi_opened_row(S, L, s2) --> { L_1 #= L - 1, between(1, L_1, A), B #= L - A }, ..., [v], repeat(S, A), [v], repeat(S, B), !, ... |
+                        { L_1 #= L - 1, between(1, L_1, A), B #= L - A }, ..., repeat(S, A), [v], repeat(S, B), [v], !, ... .
+                        
+% Défini une ligne discontinue et fermée des deux côtés:
+semi_opened_row(S, L, s1) --> { L_1 #= L - 1, between(1, L_1, A), B #= L - A }, ..., repeat(S, A), [v], repeat(S, B), !, ... .
 
-% Défini une séquence du symbole S fermée (v d'un seul côté) et de longueur L:
-closed_rep(S, L) --> { dif(S, P), dif(P, v) }, ..., [P], rep(S, L), [v], !, ... |
-                     { dif(S, P), dif(P, v) }, ..., [v], rep(S, L), [P], !, ... |
-                     rep(S, L), [v], !, ... | ..., [v], rep(S, L).
+% Défini une ligne fermée à gauche par un autre joueur (i.e. b-n-n-n-v) ou par le bord du plateau:
+closed_row_left(S, L, T) --> { dif(S, P), dif(P, v), A is T - L }, ..., [P], repeat(S, L), repeat(v, A), !, ... | { A is T - L }, repeat(S, L), repeat(v, A), !, ... .
 
-% Défini une séquence du symbole S ouverte (v des deux côtés):
-fixed_open_rep(S, T) --> { between(1, T, A), Temp #= T - A, between(1, Temp, B), C #= Temp - B, C >= 1 },
-                         ..., rep(v, A), rep(S, B), rep(v, C), !, ... .
+% Défini une ligne fermée à droite par un autre joueur (i.e. v-n-n-n-b) ou par le bord du plateau:
+closed_row_right(S, L, T) --> { dif(S, P), dif(P, v), A is T - L }, ..., repeat(v, A), repeat(S, L), [P], !, ... | { A is T - L }, ..., repeat(v, A), repeat(S, L).
 
-% Défini une séquence du symbole S ouverte (v des deux côtés):
-fixed_open_rep(S, L, T) --> { Temp #= T - L, between(1, Temp, A), B #= T - A - L, B >= 1 },
-                             ..., rep(v, A), rep(S, L), rep(v, B), !, ... .
-
-fixed_alt(S, L, a3) --> { L_1 #= L - 1, between(1, L_1, A), B #= L - A }, ..., [v], rep(S, A), [v], rep(S, B), [v], !, ... .
-fixed_alt(S, L, a2) --> { L_1 #= L - 1, between(1, L_1, A), B #= L - A }, ..., [v], rep(S, A), [v], rep(S, B), !, ... |
-                       { L_1 #= L - 1, between(1, L_1, A), B #= L - A }, ..., rep(S, A), [v], rep(S, B), [v], !, ... .
-fixed_alt(S, L, a1) --> { L_1 #= L - 1, between(1, L_1, A), B #= L - A }, ..., rep(S, A), [v], rep(S, B), !, ... .
-
-% Défini une séquence du symbole S fermée (v d'un seul côté):
-fixed_closed_rep(S, T) --> { dif(S, P), dif(P, v), between(1, T, A), B is T - A }, ..., [P], rep(S, A), rep(v, B), !, ... |
-                           { dif(S, P), dif(P, v), between(1, T, A), B is T - A }, ..., rep(v, A), rep(S, B), [P], !, ... |
-                           { between(1, T, A), B is T - A }, rep(S, A), rep(v, B), !, ... |
-                           { between(1, T, A), B is T - A }, ..., rep(v, A), rep(S, B).
-
-% Défini une séquence du symbole S fermée (v d'un seul côté):
-fixed_closed_rep(S, L, T) --> { dif(S, P), dif(P, v), A is T - L }, ..., [P], rep(S, L), rep(v, A), !, ... |
-                              { dif(S, P), dif(P, v), A is T - L }, ..., rep(v, A), rep(S, L), [P], !, ... |
-                              { A is T - L }, rep(S, L), rep(v, A), !, ... |
-                              { A is T - L }, ..., rep(v, A), rep(S, L).
+% Défini une ligne fermée à gauche ou à droite:
+closed_row(S, L, T) --> closed_row_left(S, L, T) | closed_row_right(S, L, T).
 
 % Permet de compter le nombre d'occurences d'une sous-liste:
 occurrences(List, Sublist, Count) :-

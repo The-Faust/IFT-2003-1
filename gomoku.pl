@@ -99,7 +99,7 @@ turn(Board, Player, NewBoard) :-
 		display_tie
 	),
 	% Conclu le tour:
-	conclude_turn(NewBoard, Player, NextPlayer),
+	conclude_turn(NewBoard-Player-Move, NextPlayer),
 	% Affiche les statistiques (temps écoulé):
 	statistics(runtime, [End|_]),
 	Time is (End - Start)/1000,
@@ -115,13 +115,11 @@ save_cache :-
 
 % Permet de charger les calculs effectués:
 load_cache :-
+	exists_file('evaluations.cache') ->
 	(
-		exists_file('evaluations.cache') ->
-		(
-			retractall(memo_static_score(_)),
-			retractall(memo_heuristic_score(_)),
-			consult('evaluations.cache')
-		)
-		;
-		true
-	).
+		retractall(memo_static_score(_)),
+		retractall(memo_heuristic_score(_)),
+		consult('evaluations.cache')
+	)
+	;
+	true.

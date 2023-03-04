@@ -69,8 +69,8 @@ staticval(Board-_-_, Value) :-
 	).
 
 % Évalue la valeur heurisitique d'un état pour un joueur:
-heuristicval(Board-_-_, Value) :-
-	heuristic_score(Board, Value).
+heuristicval(Pos, Value) :-
+	heuristic_score(Pos, Value).
 
 % Établi à qui appartient le tour:
 min_to_move(_-n-_).   % -> au joueur blanc (il est précédé par le joueur noir).

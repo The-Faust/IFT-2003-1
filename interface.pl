@@ -16,7 +16,7 @@
 
 
 :- [board].
-:- [static_evaluation].
+:- [heuristic_evaluation].
 
 % Identifiants du joueur:
 players_name(n, 'noir').    % Joueur noir (n).
@@ -156,27 +156,32 @@ introduce_turn(Player) :-
 	draw_line,
 	players_name(Player, PlayersName),
 	cell_to_char(Player, PlayersSymbol),
-	format('Le joueur ~w (~w) joue son tour:\n', [PlayersName, PlayersSymbol]).
+	format('Le joueur ~w (~w) joue son tour:\n\n', [PlayersName, PlayersSymbol]).
 
 % Affiche le résultat du tour qui termine:
-conclude_turn(Board, Player, NextPlayer) :-
-	display_gomoku_board(Board),
-	static_score(Board, Player, Score),
+conclude_turn(NewBoard-Player-Move, NextPlayer) :-
+	other(Player, NextPlayer),
+	display_gomoku_board(NewBoard),
+	static_score(NewBoard, Player, StaticScore),
+	heuristic_score(NewBoard-Player-_, HeuristicScore),
 	players_name(Player, PlayersName),
 	cell_to_char(Player, PlayersSymbol),
-	format('Score du joueur ~w (~w): ~d\n', [PlayersName, PlayersSymbol, Score]),
+	coordinates_to_id(Move, MoveID),
+	format('Le joueur ~w (~w) a joué la position ~w.\n\n', [PlayersName, PlayersSymbol, MoveID]),
+	format('Score statique du joueur: ~d\n', [StaticScore]),
+	format('Score heuristique du joueur: ~3f\n', [HeuristicScore]),
 	(
 		get_goal(Goal),
-		Score >= Goal ->
+		StaticScore >= Goal ->
 		(
 			draw_line,
 			format('Le joueur ~w (~w) gagne!\n', [PlayersName, PlayersSymbol]),
+			writeln(NewBoard),
 			end_game
 		)
 		;
 		true
-	),
-	other(Player, NextPlayer).
+	).
 
 % Informe l'utilisateur qu'on a obtenu un impasse:
 display_tie :-

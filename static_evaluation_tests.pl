@@ -10,11 +10,11 @@
 %   IFT-2003 - Intelligence artificielle I
 %   Hiver 2023
 
-%===========================================%
-%    Tests unitaires pour evaluation.pl.    %
-%                                           %
-%    Exécuter les tests: ?- run_tests.      %
-%===========================================%
+%====================================================%
+%    Tests unitaires pour static_evaluation.pl.      %
+%                                                    %
+%    Exécuter les tests: ?- run_tests.               %
+%====================================================%
 
 
 :- [static_evaluation].
