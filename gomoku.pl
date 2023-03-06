@@ -4,72 +4,124 @@
 % remis par
 %   Omar Akrout    (NI: 111 165 246)
 %   René Chenard   (NI: 111 232 277)
-% et
 %   Vincent Martel (NI: 111 105 797)
 %
 % dans le cadre du cours
 %   IFT-2003 - Intelligence artificielle I
 %   Hiver 2023
 
-%===================================%
-%   Initialiser le jeu: ?- play.    %
-%===================================%
+%===========================================%
+%  Options:                                 %
+%  -Initialiser le jeu:  ?- gomoku.         %
+%  -Avec paramétrage:    ?- play.           %
+%  -Tic-Tac-Toe (bonus): ?- tictactoe.      %
+%                                           %
+%  Pour une partie AI vs AI:                %
+%  - Gomoku:             ?- gomoku_auto.    %
+%  - Tic-Tac-Toe:        ?- tictactoe_auto. %
+%===========================================%
 
+
+% Chargement des modules:
 :- [board].
 :- [interface].
-:- [win_predicates].
+:- [agent].
 
-% Identifiants du joueur:
-players_name(n, 'noir').    % Joueur noir (n).
-players_name(b, 'blanc').   % Joueur blanc (b).
+% Paramètres choisis par l'utilisateur:
+:- dynamic player/1. % Couleur de l'utilisateur.
 
-% Prédicat qui permet d'alterner les joeurs:
-other(b, n).
-other(n, b).
+% Démarre le jeu avec paramétrage:
+play :-
+	set_board_size(BoardSize),
+	request_goal(BoardSize, Goal),
+	request_players_color,
+	begin_game(Firstplayer, Goal, BoardSize, Board),
+	turn(Board, Firstplayer, _).
 
-% Permet à un joueur de jouer son tour:
-move(Board, Player, NewBoard, Length) :-
-	(   % Vérifie s'il reste un emplacement vide:
-		cell_is_empty(Board, R, C) ->
-		(
-			(   % Vérifie à qui le tour appartient:
-				b_getval(players_color, Color),
-				Player == Color ->
-				(   % Le joueur choisi la case à jouer:
-					request_next_move(Board, Row, Col)
-				)
-				;
-				(   % L'ordinateur choisi la case à jouer:
-					% (Solution temporaire: La première case vide est choisie par l'ordinateur.)
-					write('L\'adversaire joue son tour:\n'),
-					Row is R,
-					Col is C
-				)
-			),
-			% Met à jour le plateau de jeu:
-			set_cell_content(Board, Row, Col, Player, NewBoard)
-		)
-		;
-		(
-			write('Le plateau de jeu est plein!\n'),
-			write('Il s\'agit d\'un impasse!\n'),
-			halt
-		)
-	).
+% Démarre le jeu selon les paramètres typiques:
+gomoku :-
+	request_players_color,
+	begin_game(Firstplayer, 5, 19, Board),
+	turn(Board, Firstplayer, _).
+
+% Partie de Gomoku AI vs AI:
+gomoku_auto :-
+	begin_game(Firstplayer, 5, 19, Board),
+	turn(Board, Firstplayer, _).
+
+% Implémentation de Tic-Tac-Toe (bonus):
+tictactoe :-
+	request_players_color,
+	begin_game(Firstplayer, 3, 3, Board),
+	turn(Board, Firstplayer, _).
+
+% Partie de Tic-Tac-Toe AI vs AI (bonus):
+tictactoe_auto :-
+	begin_game(Firstplayer, 3, 3, Board),
+	turn(Board, Firstplayer, _).
+
+% Établi la routine de début de partie:
+begin_game(Firstplayer, Goal, BoardSize, Board) :-
+	set_goal(Goal),
+	create_gomoku_board(BoardSize, Board),
+	display_gomoku_board(Board),
+	Firstplayer = n.
+	%load_cache.
+
+% Établi la routine de fin de partie:
+end_game :-
+	%save_cache,
+	break.
 
 % Établi un tour complet et boucle jusqu'à ce que le jeu termine:
 turn(Board, Player, NewBoard) :-
-	Length = 3, % Nombre de pions devant être alignés pour gagner.
-	display_gomoku_board(Board),
-	move(Board, Player, NewBoard, Length),
-	not(win(NewBoard, Player, 3)),
-	other(Player, NextPlayer),
+	% Suivi de la durée d'un tour:
+	statistics(runtime, [Start|_]),
+	% Annonce le prochain tour:
+	introduce_turn(Player),
+	(   % Vérifie s'il reste un emplacement vide:
+		has_an_empty_cell(Board) ->
+		(
+			(   % Vérifie à qui le tour appartient:
+				player(Player) ->
+				(   % Le joueur choisi la case à jouer:
+					request_next_move(Board, Move)
+				)
+				;
+				(   % L'ordinateur choisi la case à jouer:
+					agent(Board, Player, Move)
+				)
+			),
+			make_a_move(Board, Player, Move, NewBoard)
+		)
+		;
+		% Aucun emplacement vide, c'est un impasse:
+		display_tie
+	),
+	% Conclu le tour:
+	conclude_turn(NewBoard, Player, NextPlayer),
+	% Affiche les statistiques (temps écoulé):
+	statistics(runtime, [End|_]),
+	Time is (End - Start)/1000,
+	format('Le tour a pris: ~3f secondes.~n', [Time]),
+	% Récursion jusqu'à l'atteinte d'un état final:
 	turn(NewBoard, NextPlayer, _).
-	
-% Démarre le jeu:
-play :-
-	Firstplayer = n,
-	set_gomoku_board(Board),
-	request_players_color,
-	turn(Board, Firstplayer, _).
-	
+
+% Permet de sauvegarder les calculs effectués:
+save_cache :-
+	tell('evaluations.cache'),
+	listing([memo_static_score, memo_heuristic_score]),
+	told.
+
+% Permet de charger les calculs effectués:
+load_cache :-
+	(
+		exists_file('evaluations.cache') ->
+		(
+			retractall(memo_static_score(_)),
+			retractall(memo_heuristic_score(_)),
+			consult('evaluations.cache')
+		)
+		;
+		true
+	).
