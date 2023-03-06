@@ -79,6 +79,13 @@ has_an_empty_cell(Board) :-
 contains_only_empty_cells(List) :-
     \+ (member(Element, List), Element \= v).
 
+is_repeating_v(Atom) :-
+  atom_chars(Atom, Chars),
+  repeat_v(Chars).
+  
+repeat_v([]).
+repeat_v([v|Chars]) :- repeat_v(Chars).
+
 % Vérifie si les coordonnées existent sur le plateau:
 are_valid_coordinates(Board, Row-Col) :-
     get_last_index(Board, LastIndex),
@@ -150,6 +157,44 @@ get_horizontal_lines(Board, HorizontalLines) :-
 get_vertical_lines(Board, VerticalLines) :-
     transpose(Board, VerticalLines).
     
+get_diagonal_lines_down(Board, DiagonalLinesDown) :-
+    get_last_index(Board, LastIndex),
+    findall(Line, (
+              between(0, LastIndex, R),
+              between(0, LastIndex, C),
+              (
+                (R = 0 ; C = 0) ->
+                true
+                ;
+                (R = 0)
+                ;
+                (C = 0)
+              ),
+              get_line(Board, R-C, 1-1, [], Line)
+            ), DiagonalLinesDown).
+
+get_diagonal_lines_up(Board, DiagonalLinesUp) :-
+    get_last_index(Board, LastIndex),
+    findall(Line, (
+              between(0, LastIndex, R),
+              between(0, LastIndex, C),
+              (
+                (R = LastIndex ; C = 0) ->
+                true
+                ;
+                (R = LastIndex)
+                ;
+                (C = 0)
+              ),
+              get_line(Board, R-C, -1-1, [], Line)
+            ), DiagonalLinesUp).
+
+pad_line(Line, PaddedLine) :-
+    atomic_list_concat([x, Line, x], PaddedLine).
+
+pad_lines(Lines, PaddedLines) :-
+    maplist(pad_line, Lines, PaddedLines).
+
 % Extrait une ligne dans une direction donnée à partir d'une case:
 get_line(Board, R-C, StepR-StepC, Accumulator, Line) :-
     get_cell_content(Board, R-C, Content), !,
@@ -157,7 +202,55 @@ get_line(Board, R-C, StepR-StepC, Accumulator, Line) :-
     NewR is R + StepR,
     NewC is C + StepC,
     get_line(Board, NewR-NewC, StepR-StepC, NewAccumulator, Line).
-get_line(_, _, _, Line, Line).
+get_line(_, _, _, RLine, Line) :- reverse(RLine, Line).
+
+get_line_atoms(Board, R-C, StepR-StepC, Accumulator, Line) :-
+    get_cell_content(Board, R-C, Content), !,
+    atomic_list_concat([Accumulator, Content], NewAccumulator),
+    NewR is R + StepR,
+    NewC is C + StepC,
+    get_line_atoms(Board, NewR-NewC, StepR-StepC, NewAccumulator, Line).
+get_line_atoms(_, _, _, Line, Line).
+
+get_horizontal_lines_atoms(Board, HorizontalLines) :-
+    maplist(atom_chars, HorizontalLines, Board).
+
+get_vertical_lines_atoms(Board, VerticalLines) :-
+    transpose(Board, BoardT),
+    maplist(atom_chars, VerticalLines, BoardT).
+
+get_diagonal_lines_up_atoms(Board, DiagonalLinesUp) :-
+    get_last_index(Board, LastIndex),
+    findall(Line, (
+              between(0, LastIndex, R),
+              between(0, LastIndex, C),
+              (R = LastIndex, C = 0 ; R = LastIndex, not(C = 0) ; not(R = LastIndex), C = 0),
+              get_line_atoms(Board, R-C, -1-1, '', Line)
+            ), DiagonalLinesUp).
+
+get_diagonal_lines_down_atoms(Board, DiagonalLinesDown) :-
+    get_last_index(Board, LastIndex),
+    findall(Line, (
+              between(0, LastIndex, R),
+              between(0, LastIndex, C),
+              (
+                (R = 0 ; C = 0) ->
+                true
+                ;
+                (R = 0)
+                ;
+                (C = 0)
+              ),
+              get_line_atoms(Board, R-C, 1-1, '', Line)
+            ), DiagonalLinesDown).
+
+get_all_lines_atoms(Board, PaddedLines) :-
+    get_horizontal_lines_atoms(Board, HorizontalLines),
+    get_vertical_lines_atoms(Board, VerticalLines),
+    get_diagonal_lines_up_atoms(Board, DiagonalLinesUp),
+    get_diagonal_lines_down_atoms(Board, DiagonalLinesDown),
+    flatten([HorizontalLines, VerticalLines, DiagonalLinesUp, DiagonalLinesDown], Lines),
+    pad_lines(Lines, PaddedLines).
 
 % Créer une liste avec logueur spécifiée et une valeur par défaut:
 create_list(Length, DefaultValue, List) :-
@@ -181,59 +274,14 @@ is_a_sublist_index(SubList, List, Index) :-
 % Défini "n'importe quelle séquence" avec les points de suspension:
 ... --> [] | [_], ... .
 
-% Défini une séquence du symbole S et de longueur L:
-repeat(S, L) --> [], {L #= 0} | [S], {L #= 1} | [S], { L_1 #= L - 1 }, repeat(S, L_1), !.
-
-% Défini une ligne complète:
-full_row(S, Goal) --> ..., repeat(S, Goal), !, ... .
-
-% Défini une ligne ouverte des deux côtés (i.e. v-n-n-n-v):
-opened_row(S, L, T) --> { Temp #= T - L, between(1, Temp, A), B #= T - A - L, B >= 1 }, ..., repeat(v, A), repeat(S, L), repeat(v, B), !, ... .
-
-% Défini une ligne discontinue et ouverte des deux côtés:
-semi_opened_row(S, L, s3) --> { L_1 #= L - 1, between(1, L_1, A), B #= L - A }, ..., [v], repeat(S, A), [v], repeat(S, B), [v], !, ... .
-
-% Défini une ligne discontinue et ouverte d'un côté:
-semi_opened_row(S, L, s2) --> { L_1 #= L - 1, between(1, L_1, A), B #= L - A }, ..., [v], repeat(S, A), [v], repeat(S, B), !, ... |
-                        { L_1 #= L - 1, between(1, L_1, A), B #= L - A }, ..., repeat(S, A), [v], repeat(S, B), [v], !, ... .
-                        
-% Défini une ligne discontinue et fermée des deux côtés:
-semi_opened_row(S, L, s1) --> { L_1 #= L - 1, between(1, L_1, A), B #= L - A }, ..., repeat(S, A), [v], repeat(S, B), !, ... .
-
-% Défini une ligne fermée à gauche par un autre joueur (i.e. b-n-n-n-v) ou par le bord du plateau:
-closed_row_left(S, L, T) --> { dif(S, P), dif(P, v), A is T - L }, ..., [P], repeat(S, L), repeat(v, A), !, ... | { A is T - L }, repeat(S, L), repeat(v, A), !, ... .
-
-% Défini une ligne fermée à droite par un autre joueur (i.e. v-n-n-n-b) ou par le bord du plateau:
-closed_row_right(S, L, T) --> { dif(S, P), dif(P, v), A is T - L }, ..., repeat(v, A), repeat(S, L), [P], !, ... | { A is T - L }, ..., repeat(v, A), repeat(S, L).
-
-% Défini une ligne fermée à gauche ou à droite:
-closed_row(S, L, T) --> closed_row_left(S, L, T) | closed_row_right(S, L, T).
-
-% Permet de compter le nombre d'occurences d'une sous-liste:
-occurrences(List, Sublist, Count) :-
-    phrase(occurrences(Sublist, 0, Count), List).
-    
-occurrences("", _, _) --> !, { false }.
-
-occurrences(Sublist, Count0, Count) -->
-    Sublist, !, { Count1 is Count0 + 1 },
-    occurrences(Sublist, Count1, Count).
-    
-occurrences(Sublist, Count0, Count) -->
-    [_], !,
-    occurrences(Sublist, Count0, Count).
-    
-occurrences(_, Count, Count) --> !.
-
 % Permet de créer l'empreinte d'une configuration du plateau:
 hash_function(Board, Hash) :-
-  flatten(Board, GridString),
-  hash_function(GridString, 0, Hash).
+    flatten(Board, GridString),
+    hash_function(GridString, 0, Hash).
   
 hash_function([], Hash, Hash).
 
 hash_function([C|Cs], Acc, Hash) :-
-  cell_to_num(C, Code),
-  NewAcc is ((Acc << 2) - Acc) + Code,
-  hash_function(Cs, NewAcc, Hash).
-  
+    cell_to_num(C, Code),
+    NewAcc is ((Acc << 2) - Acc) + Code,
+    hash_function(Cs, NewAcc, Hash).

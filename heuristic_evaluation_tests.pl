@@ -22,118 +22,128 @@
 :- begin_tests(heuristic_evaluation).
 
 test(line_score) :-
+	writeln(''),
 	set_goal(5),
 	
-	% No value:
+	% Ligne vide:
 	
-	line_score([v,v,v,v,v,v,v,v,v,v], n, EmptyRowScore),
-	assertion(EmptyRowScore = 0),
-	
-	line_score([n,v,v,v,v,v,v,v,v,v], n, ClosedNLeft1Score),
-	assertion(ClosedNLeft1Score = 0),
-	
-	line_score([b,n,v,v,v,v,v,v,v,v], n, ClosedNLeft2Score),
-	assertion(ClosedNLeft2Score = 0),
-	
-	line_score([v,v,v,v,v,v,v,v,v,n], n, ClosedNRight1Score),
-	assertion(ClosedNRight1Score = 0),
-	
-	line_score([v,v,v,v,v,v,v,v,n,b], n, ClosedNRight2Score),
-	assertion(ClosedNRight2Score = 0),
+	time(check_line_score(xvvvvvvvvvvx, n, EmptyRowScore)),
+	assertion(EmptyRowScore =:= 0),
 	
 	% Opened rows:
 	
-	line_score([v,v,v,v,n,v,v,v,v,v], n, Opened1NScore),
-	assertion(Opened1NScore = 0.01),
+	time(check_line_score(xvvvvnvvvvvx, n, Opened1NScore)),
+	assertion(Opened1NScore =:= 2),
 	
-	line_score([v,v,v,v,n,n,v,v,v,v], n, Opened2NScore),
-	assertion(Opened2NScore = 1448.1546878700492),
+	time(check_line_score(xvvvvnnvvvvx, n, Opened2NScore)),
+	assertion(Opened2NScore =:= 20),
 	
-	line_score([v,v,v,n,n,n,v,v,v,v], n, Opened3NScore),
-	assertion(Opened3NScore = 46340.950011841574),
+	time(check_line_score(xvvvnnnvvvvx, n, Opened3NScore)),
+	assertion(Opened3NScore =:= 200),
 	
-	line_score([v,v,v,n,n,n,n,v,v,v], n, Opened4NScore),
-	assertion(Opened4NScore = 370727.6000947326),
+	time(check_line_score(xvvvnnnnvvvx, n, Opened4NScore)),
+	assertion(Opened4NScore =:= 2000),
 	
-	line_score([v,v,v,v,b,v,v,v,v,v], n, Opened1BScore),
-	assertion(Opened1BScore = -0.01),
+	time(check_line_score(xvvvvbvvvvvx, n, Opened1BScore)),
+	assertion(Opened1BScore =:= -20),
 	
-	line_score([v,v,v,v,b,b,v,v,v,v], n, Opened2BScore),
-	assertion(Opened2BScore = -2048),
+	time(check_line_score(xvvvvbbvvvvx, n, Opened2BScore)),
+	assertion(Opened2BScore =:= -200),
 	
-	line_score([v,v,v,b,b,b,v,v,v,v], n, Opened3BScore),
-	assertion(Opened3BScore = -65536),
+	time(check_line_score(xvvvbbbvvvvx, n, Opened3BScore)),
+	assertion(Opened3BScore =:= -2000),
 	
-	line_score([v,v,v,b,b,b,b,v,v,v], n, Opened4BScore),
-	assertion(Opened4BScore = -524288),
+	time(check_line_score(xvvvbbbbvvvx, n, Opened4BScore)),
+	assertion(Opened4BScore =:= -20000),
 	
 	% Closed rows:
 	
-	line_score([v,v,v,b,n,n,v,v,v,v], n, Closed2NScore),
-	assertion(Closed2NScore = 362.0386719675123),
+	time(check_line_score(xnvvvvvvvvvx, n, ClosedNLeft1Score)),
+	assertion(ClosedNLeft1Score =:= 0.8),
 	
-	line_score([v,v,v,b,n,n,n,v,v,v], n, Closed3NScore),
-	assertion(Closed3NScore = 11585.237502960394),
+	time(check_line_score(xbnvvvvvvvvx, n, ClosedNLeft2Score)),
+	assertion(ClosedNLeft2Score =:= 0.8),
 	
-	line_score([v,v,v,b,n,n,n,n,v,v], n, Closed4NScore),
-	assertion(Closed4NScore = 92681.90002368315),
+	time(check_line_score(xvvvvvvvvvnx, n, ClosedNRight1Score)),
+	assertion(ClosedNRight1Score =:= 0.8),
 	
-	line_score([v,v,v,n,b,b,v,v,v,v], n, Closed2BScore),
-	assertion(Closed2BScore = -512),
+	time(check_line_score(xvvvvvvvvnbx, n, ClosedNRight2Score)),
+	assertion(ClosedNRight2Score =:= 0.8),
 	
-	line_score([v,v,v,n,b,b,b,v,v,v], n, Closed3BScore),
-	assertion(Closed3BScore = -16384),
+	time(check_line_score(xvvvbnnvvvvx, n, Closed2NScore_1)),
+	assertion(Closed2NScore_1 =:= 8),
 	
-	line_score([v,v,v,n,b,b,b,b,v,v], n, Closed4BScore),
-	assertion(Closed4BScore = -131072),
+	time(check_line_score(xvvvnnbvvvvx, n, Closed2NScore_2)),
+	assertion(Closed2NScore_2 =:= 0),
+	
+	time(check_line_score(xvvvbnnnvvvx, n, Closed3NScore_1)),
+	assertion(Closed3NScore_1 =:= 80),
+	
+	time(check_line_score(xvvvnnnbvvvx, n, Closed3NScore_2)),
+	assertion(Closed3NScore_2 =:= 80),
+	
+	time(check_line_score(xvvvbnnnnvvx, n, Closed4NScore_1)),
+	assertion(Closed4NScore_1 =:= 800),
+	
+	time(check_line_score(xvvvnnnnbvvx, n, Closed4NScore_2)),
+	assertion(Closed4NScore_2 =:= 800),
+	
+	time(check_line_score(xvvvnbbvvvvx, n, Closed2BScore)),
+	assertion(Closed2BScore =:= -80),
+	
+	time(check_line_score(xvvvnbbbvvvx, n, Closed3BScore)),
+	assertion(Closed3BScore =:= -800),
+	
+	time(check_line_score(xvvvnbbbbvvx, n, Closed4BScore)),
+	assertion(Closed4BScore =:= -8000),
 	
 	% Full rows:
 	
-	line_score([v,v,v,n,n,n,n,n,v,v], n, Opened5NScore),
-	assertion(Opened5NScore = 741455.2001894652),
+	time(check_line_score(xvvvnnnnnvvx, n, Opened5NScore)),
+	assertion(Opened5NScore =:= 20000),
 	
-	line_score([v,v,v,b,n,n,n,n,n,v], n, Closed5NScore),
-	assertion(Closed5NScore = 741455.2001894652),
+	time(check_line_score(xvvvbnnnnnvx, n, Closed5NScore)),
+	assertion(Closed5NScore =:= 8000),
 	
-	line_score([v,v,v,b,b,b,b,b,v,v], n, Opened5BScore),
-	assertion(Opened5BScore = -1048576),
+	time(check_line_score(xvvvbbbbbvvx, n, Opened5BScore)),
+	assertion(Opened5BScore =:= -200000),
 	
-	line_score([v,v,v,n,b,b,b,b,b,v], n, Closed5BScore),
-	assertion(Closed5BScore = -1048576),
+	time(check_line_score(xvvvnbbbbbvx, n, Closed5BScore)),
+	assertion(Closed5BScore =:= -80000),
 	
 	% Semi-Opened rows:
 	
-	line_score([v,v,v,n,v,n,n,n,v,v], n, SemiOpened3NScore_1),
-	assertion(SemiOpened3NScore_1 = 370727.6000947326),
+	time(check_line_score(xvvvnvnnnvvx, n, SemiOpened3NScore_1)),
+	assertion(SemiOpened3NScore_1 =:= 1800),
 	
-	line_score([v,v,v,n,n,v,n,n,v,v], n, SemiOpened3NScore_2),
-	assertion(SemiOpened3NScore_2 = 370727.6000947326),
+	time(check_line_score(xvvvnnvnnvvx, n, SemiOpened3NScore_2)),
+	assertion(SemiOpened3NScore_2 =:= 1800),
 	
-	line_score([v,v,b,n,n,v,n,n,v,v], n, SemiOpened2NScore),
-	assertion(SemiOpened2NScore = 185363.8000473663),
+	time(check_line_score(xvvbnnvnnvvx, n, SemiOpened2NScore)),
+	assertion(SemiOpened2NScore =:= 600),
 	
-	line_score([v,v,b,n,n,v,n,n,b,v], n, SemiOpened1NScore),
-	assertion(SemiOpened1NScore = 92681.90002368315),
+	time(check_line_score(xvvbnnvnnbvx, n, SemiOpened1NScore)),
+	assertion(SemiOpened1NScore =:= 1600),
 	
-	line_score([v,v,v,b,v,b,b,b,v,v], n, SemiOpened3BScore_1),
-	assertion(SemiOpened3BScore_1 = -524288),
+	time(check_line_score(xvvvbvbbbvvx, n, SemiOpened3BScore_1)),
+	assertion(SemiOpened3BScore_1 =:= -18000),
 	
-	line_score([v,v,v,b,b,v,b,b,v,v], n, SemiOpened3BScore_2),
-	assertion(SemiOpened3BScore_2 = -524288),
+	time(check_line_score(xvvvbbvbbvvx, n, SemiOpened3BScore_2)),
+	assertion(SemiOpened3BScore_2 =:= -18000),
 	
-	line_score([v,v,n,b,b,v,b,b,v,v], n, SemiOpened2BScore),
-	assertion(SemiOpened2BScore = -262144),
+	time(check_line_score(xvvnbbvbbvvx, n, SemiOpened2BScore)),
+	assertion(SemiOpened2BScore =:= -6000),
 	
-	line_score([v,v,n,b,b,v,b,b,n,v], n, SemiOpened1BScore),
-	assertion(SemiOpened1BScore = -131072)
+	time(check_line_score(xvvnbbvbbnvx, n, SemiOpened1BScore)),
+	assertion(SemiOpened1BScore =:= -16000)
 	.
 
 %test(evaluate_score_3x3_empty) :-
 %	set_goal(3),
 %	Pos = [
-%		[v,v,v],
-%		[v,v,v],
-%		[v,v,v]]-nil-nil,
+%		[vvv],
+%		[vvv],
+%		[vvv]]-nil-nil,
 %	
 %	heuristic_score(Pos, Score),
 %	
@@ -142,12 +152,16 @@ test(line_score) :-
 %test(evaluate_score_3x3_middle_n) :-
 %	set_goal(3),
 %	Pos = [
-%		[v,v,v],
-%		[v,n,v],
-%		[v,v,v]]-n-(1-1),
+%		[vvv],
+%		[vnv],
+%		[vvv]]-n-(1-1),
 %
 %	heuristic_score(Pos, Score),
 %	
 %	assertion(Score = 0.04).
 
 :- end_tests(heuristic_evaluation).
+
+check_line_score(Line, Player, Score) :-
+	line_score(Line, Player, Score),
+	format('Line = ~w, Player = ~w, Score = ~w\n', [Line, Player, Score]).
