@@ -29,34 +29,22 @@ heuristic_score(Board-_-_, TotalScore) :-
 
 heuristic_score(Board-Player-_, TotalScore) :-
 	get_goal(Goal),
-	get_all_lines_atoms(Board, Lines),
-	aggregate_all(sum(LineScore), (
-		member(Line, Lines),
-		line_score(Line, Player, LineScore)
-	), TotalScore),
+	get_all_lines(Board, Lines),
+	line_score(Lines, Player, TotalScore),
 	!,
 	hash_function(Board, Hash),
 	assertz(memo_heuristic_score(Hash, Goal, TotalScore)).
 
 line_score(Line, Player, Score) :-
-	( is_repeating_v(Line) ; get_goal(Goal), atom_length(Line, Length), Length < Goal ) ->
-	(
-		Score is 0
-	)
-	;
 	(
 		get_goal(Goal),
-		atom_chars(Line, LineList),
-		clumped(LineList, RLE),
-		%writeln(RLE),
+		clumped(Line, RLE),
 		aggregate_all(sum(PartialScore), (
 			member(Playing-Sign, [n-1, b-(-1)]),
 			pattern(Playing, Pattern, Type, N, Goal),
 			sublist(RLE, Pattern),
-			%writeln(Pattern),
 			( Playing = Player -> Factor is 1 ; Factor is 10 ),
 			value(Type, N, Goal, Value),
-			%writeln(Value),
 			PartialScore is Sign * Factor * Value
 		), Score)
 	), !.
@@ -64,11 +52,6 @@ line_score(Line, Player, Score) :-
 sublist(List, Sublist) :-
 	append(_, Rest, List),
 	append(Sublist, _, Rest).
-
-% set_goal(5), time(line_score(xvvvnnnvvvvx, n, Score)).
-% set_goal(5), time(line_score(xvvvnnbvvvvx, n, Score)).
-% set_goal(5), time(line_score(xvvvnvnnnvvx, n, Score)).
-% set_goal(5), time(line_score(xvvvnbbbvvnnnvnbvvvvnx, n, Score)).
 
 pattern(Playing, [v-A, Playing-N, v-B], opened, N, Goal) :- Goal #=< A + N + B, dif(A, 1), dif(B, 1).
 pattern(Playing, [P-_, v-1, Playing-N, v-B], opened, N, Goal) :- Goal #=< 1 + N + B, dif(P, Playing).

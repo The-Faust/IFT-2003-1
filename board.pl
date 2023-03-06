@@ -189,12 +189,6 @@ get_diagonal_lines_up(Board, DiagonalLinesUp) :-
               get_line(Board, R-C, -1-1, [], Line)
             ), DiagonalLinesUp).
 
-pad_line(Line, PaddedLine) :-
-    atomic_list_concat([x, Line, x], PaddedLine).
-
-pad_lines(Lines, PaddedLines) :-
-    maplist(pad_line, Lines, PaddedLines).
-
 % Extrait une ligne dans une direction donnée à partir d'une case:
 get_line(Board, R-C, StepR-StepC, Accumulator, Line) :-
     get_cell_content(Board, R-C, Content), !,
@@ -202,74 +196,42 @@ get_line(Board, R-C, StepR-StepC, Accumulator, Line) :-
     NewR is R + StepR,
     NewC is C + StepC,
     get_line(Board, NewR-NewC, StepR-StepC, NewAccumulator, Line).
-get_line(_, _, _, RLine, Line) :- reverse(RLine, Line).
+get_line(_, _, _, Line, Line).
 
-get_line_atoms(Board, R-C, StepR-StepC, Accumulator, Line) :-
-    get_cell_content(Board, R-C, Content), !,
-    atomic_list_concat([Accumulator, Content], NewAccumulator),
-    NewR is R + StepR,
-    NewC is C + StepC,
-    get_line_atoms(Board, NewR-NewC, StepR-StepC, NewAccumulator, Line).
-get_line_atoms(_, _, _, Line, Line).
+get_all_lines(Board, Lines) :-
+    get_horizontal_lines(Board, HorizontalLines),
+    pad_lines(HorizontalLines, HorizontalLinesP),
+    get_vertical_lines(Board, VerticalLines),
+    pad_lines(VerticalLines, VerticalLinesP),
+    get_diagonal_lines_up(Board, DiagonalLinesUp),
+    pad_lines(DiagonalLinesUp, DiagonalLinesUpP),
+    get_diagonal_lines_down(Board, DiagonalLinesDown),
+    filter_and_pad_lines(DiagonalLinesDown, DiagonalLinesDownP),
+    flatten([HorizontalLinesP, VerticalLinesP, DiagonalLinesUpP, DiagonalLinesDownP], Lines).
+    
+pad_line(Line, PaddedLine) :-
+    flatten([x, Line, x], PaddedLine).
+    
+pad_lines(Lines, PaddedLines) :-
+    maplist(pad_line, Lines, PaddedLines).
 
-get_horizontal_lines_atoms(Board, HorizontalLines) :-
-    maplist(atom_chars, HorizontalLines, Board).
+line_is_worth_treating(Line) :-
+    get_goal(Goal),
+    not(contains_only_empty_cells(Line)),
+    length(Line, Length),
+    Length >= Goal.
 
-get_vertical_lines_atoms(Board, VerticalLines) :-
-    transpose(Board, BoardT),
-    maplist(atom_chars, VerticalLines, BoardT).
+filter_lines(Lines, FilteredLines) :-
+    include(line_is_worth_treating, Lines, FilteredLines).
 
-get_diagonal_lines_up_atoms(Board, DiagonalLinesUp) :-
-    get_last_index(Board, LastIndex),
-    findall(Line, (
-              between(0, LastIndex, R),
-              between(0, LastIndex, C),
-              (R = LastIndex, C = 0 ; R = LastIndex, not(C = 0) ; not(R = LastIndex), C = 0),
-              get_line_atoms(Board, R-C, -1-1, '', Line)
-            ), DiagonalLinesUp).
-
-get_diagonal_lines_down_atoms(Board, DiagonalLinesDown) :-
-    get_last_index(Board, LastIndex),
-    findall(Line, (
-              between(0, LastIndex, R),
-              between(0, LastIndex, C),
-              (
-                (R = 0 ; C = 0) ->
-                true
-                ;
-                (R = 0)
-                ;
-                (C = 0)
-              ),
-              get_line_atoms(Board, R-C, 1-1, '', Line)
-            ), DiagonalLinesDown).
-
-get_all_lines_atoms(Board, PaddedLines) :-
-    get_horizontal_lines_atoms(Board, HorizontalLines),
-    get_vertical_lines_atoms(Board, VerticalLines),
-    get_diagonal_lines_up_atoms(Board, DiagonalLinesUp),
-    get_diagonal_lines_down_atoms(Board, DiagonalLinesDown),
-    flatten([HorizontalLines, VerticalLines, DiagonalLinesUp, DiagonalLinesDown], Lines),
-    pad_lines(Lines, PaddedLines).
+filter_and_pad_lines(Lines, TreatedLines) :-
+    filter_lines(Lines, FilteredLines),
+    maplist(pad_line, FilteredLines, TreatedLines).
 
 % Créer une liste avec logueur spécifiée et une valeur par défaut:
 create_list(Length, DefaultValue, List) :-
     length(List, Length),
     maplist(=(DefaultValue), List), !.
-
-% Permet d'extraire une sous-liste à l'aide d'un index:
-sublist(List, From, Count, SubList) :-
-    To is From + Count - 1,
-    findall(E, (between(From, To, I), nth0(I, List, E)), SubList).
-
-% Permet de vérifier si une liste est contenue dans l'autre:
-is_a_sublist(SubList, List) :-
-    phrase((..., SubList), List, _), !.
-
-% Permet de vérifier si une liste est contenue dans l'autre et d'obtenir son index:
-is_a_sublist_index(SubList, List, Index) :-
-    phrase((..., SubList), List, Before),
-    length(Before, Index), !.
 
 % Défini "n'importe quelle séquence" avec les points de suspension:
 ... --> [] | [_], ... .
@@ -285,3 +247,4 @@ hash_function([C|Cs], Acc, Hash) :-
     cell_to_num(C, Code),
     NewAcc is ((Acc << 2) - Acc) + Code,
     hash_function(Cs, NewAcc, Hash).
+    

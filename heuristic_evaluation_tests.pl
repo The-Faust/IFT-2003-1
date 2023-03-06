@@ -163,5 +163,6 @@ test(line_score) :-
 :- end_tests(heuristic_evaluation).
 
 check_line_score(Line, Player, Score) :-
-	line_score(Line, Player, Score),
+	atom_chars(Line, LineList),
+	line_score(LineList, Player, Score),
 	format('Line = ~w, Player = ~w, Score = ~w\n', [Line, Player, Score]).
