@@ -140,6 +140,36 @@ test(prevent_semi3_three) :-
 	
 	assertion(MoveDone = IdealMove),
 	assertion(Val = IdealMoveScore).
+
+test(win_next_turn) :-
+	set_goal(5),
+	Pos = [
+		[v,n,v,v,v,v,b,v,v,n,v],
+		[v,v,b,n,v,n,n,v,b,v,v],
+		[b,v,n,b,n,v,b,b,b,b,n],
+		[v,n,n,n,b,v,b,n,n,n,v],
+		[b,v,n,b,b,b,b,n,v,v,v],
+		[v,b,n,n,n,b,n,n,b,v,v],
+		[v,v,b,v,n,n,b,b,n,v,v],
+		[v,v,v,n,b,b,n,b,v,v,v],
+		[v,v,v,v,v,v,b,n,n,v,v],
+		[v,v,v,v,v,v,v,v,b,v,v],
+		[v,v,v,v,v,v,v,v,v,v,v]]-n-(2-10),
+	Alpha = -inf,
+	Beta = inf,
+	
+	Depth is 1,
+	get_time(TimeStamp),
+	TimeLimit is 1.5,
+	
+	time(alphabeta_heuristic(Pos, Alpha, Beta, GoodPos, Val, Depth, TimeStamp, TimeLimit)),
+	GoodPos = _-_-MoveDone,
+	
+	IdealMove = 2-5,
+	show_heuristic_values(Pos, GoodPos, IdealMove, IdealMoveScore),
+	
+	assertion(MoveDone = IdealMove),
+	assertion(Val = IdealMoveScore).
 	
 :- end_tests(alphabeta_heuristic).
 

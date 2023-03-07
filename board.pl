@@ -247,4 +247,3 @@ hash_function([C|Cs], Acc, Hash) :-
     cell_to_num(C, Code),
     NewAcc is ((Acc << 2) - Acc) + Code,
     hash_function(Cs, NewAcc, Hash).
-    

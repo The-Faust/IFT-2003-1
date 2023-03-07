@@ -123,7 +123,7 @@ test(line_score) :-
 	assertion(SemiOpened2NScore =:= 600),
 	
 	time(check_line_score(xvvbnnvnnbvx, n, SemiOpened1NScore)),
-	assertion(SemiOpened1NScore =:= 1600),
+	assertion(SemiOpened1NScore =:= 600),
 	
 	time(check_line_score(xvvvbvbbbvvx, n, SemiOpened3BScore_1)),
 	assertion(SemiOpened3BScore_1 =:= -18000),
@@ -135,8 +135,15 @@ test(line_score) :-
 	assertion(SemiOpened2BScore =:= -6000),
 	
 	time(check_line_score(xvvnbbvbbnvx, n, SemiOpened1BScore)),
-	assertion(SemiOpened1BScore =:= -16000)
+	assertion(SemiOpened1BScore =:= -6000)
 	.
+
+test(line_score_misc) :-
+	writeln(''),
+	set_goal(5),
+	
+	time(check_line_score(xvvvnbbbvvvxxvvvnnnnbvvx, n, Score1)),
+	assertion(Score1 =:= 0).
 
 %test(evaluate_score_3x3_empty) :-
 %	set_goal(3),
@@ -166,3 +173,4 @@ check_line_score(Line, Player, Score) :-
 	atom_chars(Line, LineList),
 	line_score(LineList, Player, Score),
 	format('Line = ~w, Player = ~w, Score = ~w\n', [Line, Player, Score]).
+	

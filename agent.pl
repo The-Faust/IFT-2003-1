@@ -33,7 +33,7 @@ agent(Board, Player, Move) :-
 		% Algorithme Minimax:
 %		minimax(Board-LastPlayer-nil, _-_-Move, _).
 		% Algorithme Alpha-Bêta:
-%		alphabeta(Board-LastPlayer-nil, -inf, inf, _-_-Move, _).
+%		alphabeta(Board-LastPlayer-nil, -inf, inf, _-_-Move, _)
 		% Algorithme Alpha-Bêta avec heuristique (profodeur de recherche limitée):
 		get_time(Time),
 		alphabeta_heuristic(Board-LastPlayer-nil, -inf, inf, _-_-Move, _, 1, Time, 1.5)
@@ -44,18 +44,19 @@ moves(Board-LastPlayer-_, PosList) :-
 	not(game_over(Board, _)),
 	% Récupère les cases non utilisées:
 	get_possible_moves(Board, PossibleMoves),
+	random_permutation(PossibleMoves, PossibleMovesShuffled),
 	% Détermine à qui le tour appartient:
 	other(Player, LastPlayer),
 	% Construit la liste des transitions possibles:
 	bagof(NewBoard-Player-Move,
 		(
-			member(Move, PossibleMoves),
+			member(Move, PossibleMovesShuffled),
 			make_a_move(Board, Player, Move, NewBoard)
 		), PosList).
 
 % Évalue la valeur d'un état pour un joueur:
 staticval(Board-_-_, Value) :-
-	game_over(Board, Winner),
+	game_over(Board, Winner), !,
 	(
 		Winner = nil ->
 		Value is 0
@@ -70,7 +71,7 @@ staticval(Board-_-_, Value) :-
 
 % Évalue la valeur heurisitique d'un état pour un joueur:
 heuristicval(Pos, Value) :-
-	heuristic_score(Pos, Value).
+	heuristic_score(Pos, Value), !.
 
 % Établi à qui appartient le tour:
 min_to_move(_-n-_).   % -> au joueur blanc (il est précédé par le joueur noir).
