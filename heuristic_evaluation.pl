@@ -27,6 +27,7 @@ heuristic_score(Board-_-_,Score) :-
 	memo_heuristic_score(Hash, Goal, Score),
 	!.
 
+% Évalue la valeur heuristique d'un état:
 heuristic_score(Board-Player-_, Score) :-
 	get_goal(Goal),
 	get_all_lines(Board, Lines),
@@ -36,6 +37,7 @@ heuristic_score(Board-Player-_, Score) :-
 	hash_function(Board, Hash),
 	assertz(memo_heuristic_score(Hash, Goal, Score)).
 
+% Calcule la somme du score sur une ligne:
 sum_score(Player, Line, Score) :-
 	sum_score(Player, Line, 0, Score).
 sum_score(_, [], Score, Score) :- !.
@@ -56,24 +58,30 @@ sum_score(Player, [X|Xs], PreviousScore, Score) :-
 	),
 	sum_score(Player, Xs, NewScore, Score).
 
+% Évite d'appliquer un patron aux délimiteurs (x) ou aux cases vides (v):
 is_a_player(Symbol) :- dif(Symbol, x), dif(Symbol, v), !.
 
+% Pour capturer les rangées ouvertes:
 pattern(Playing, [v-A, Playing-N, v-B], opened, N, Goal) :- N #< Goal, Goal #=< A + N + B, dif(A, 1), dif(B, 1), is_a_player(Playing), !.
 pattern(Playing, [P-_, v-1, Playing-N, v-B], opened, N, Goal) :- N #< Goal, Goal #=< 1 + N + B, dif(P, Playing), is_a_player(Playing), !.
 pattern(Playing, [v-A, Playing-N, v-1, Q-_], opened, N, Goal) :- N #< Goal, Goal #=< A + N + 1, dif(Q, Playing), is_a_player(Playing), !.
 pattern(Playing, [P-_, v-1, Playing-N, v-1, Q-_], opened, N, Goal) :- N #< Goal, Goal #=< N + 2, dif(P, Playing), dif(Q, Playing), is_a_player(Playing), !.
 
+% Pour capturer les rangées fermées:
 pattern(Playing, [v-A, Playing-N, Y-_], closed, N, Goal) :- N #< Goal, other(Playing, Other), member(Y, [x, Other]), Goal #=< A + N, dif(A, 1), is_a_player(Playing), !.
 pattern(Playing, [X-_, Playing-N, v-B], closed, N, Goal) :- N #< Goal, other(Playing, Other), member(X, [x, Other]), Goal #=< N + B, dif(B, 1), is_a_player(Playing), !.
 pattern(Playing, [P-_, v-1, Playing-N, Y-_], closed, N, Goal) :- N #< Goal, other(Playing, Other), member(Y, [x, Other]), Goal #=< 1 + N, dif(P, Playing), is_a_player(Playing), !.
 pattern(Playing, [X-_, Playing-N, v-1, Q-_], closed, N, Goal) :- N #< Goal, other(Playing, Other), member(X, [x, Other]), Goal #=< N + 1, dif(Q, Playing), is_a_player(Playing), !.
 
+% Pour capturer les rangées semi-ouvertes:
 pattern(Playing, [v-_, Playing-M, v-1, Playing-N, v-_], semi_opened3, S, Goal) :- S #= M + N, Goal #=< S + 1, is_a_player(Playing), !.
 pattern(Playing, [P-_, Playing-M, v-1, Playing-N, Q-_], semi_opened2, S, Goal) :- S #= M + N, Goal #=< S + 1, ( dif(P, v) ; dif(Q, v) ), is_a_player(Playing), !.
 pattern(Playing, [P-_, Playing-M, v-1, Playing-N, Q-_], semi_opened1, S, Goal) :- S #= M + N, Goal #=< S + 1, ( dif(P, v) , dif(Q, v) ), is_a_player(Playing), !.
 
+% Pour capturer une rangée gagnante:
 pattern(Playing, [Playing-N], win, _, Goal) :- Goal #=< N, is_a_player(Playing), !.
 
+% Pour évaluer la valeur d'un patron:
 value(win, _, Goal, Value) :- Value is 3 * 10**(Goal - 1), !.
 value(opened, N, _, Value) :- Value is 3 * 10**(N - 1), !.
 value(closed, N, _, Value) :- Value is 1 * 10**(N - 1), !.

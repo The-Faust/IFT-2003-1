@@ -118,10 +118,13 @@ get_vertical_lines(Board, VerticalLines) :-
 
 % Extrait les lignes diagonales descendantes:
 get_diagonal_lines_down(Board, DiagonalLinesDown) :-
+    get_goal(Goal),
     get_last_index(Board, LastIndex),
+    Goal_1 is Goal - 1,
+    LastUsefulIndex is LastIndex - Goal_1,
     findall(Line, (
-              between(0, LastIndex, R),
-              between(0, LastIndex, C),
+              between(0, LastUsefulIndex, R),
+              between(0, LastUsefulIndex, C),
               (
                 (R = 0 ; C = 0) ->
                 true
@@ -135,10 +138,13 @@ get_diagonal_lines_down(Board, DiagonalLinesDown) :-
 
 % Extrait les lignes diagonales montantes:
 get_diagonal_lines_up(Board, DiagonalLinesUp) :-
+    get_goal(Goal),
     get_last_index(Board, LastIndex),
+    Goal_1 is Goal - 1,
+    LastUsefulIndex is LastIndex - Goal_1,
     findall(Line, (
-              between(0, LastIndex, R),
-              between(0, LastIndex, C),
+              between(Goal_1, LastIndex, R),
+              between(0, LastUsefulIndex, C),
               (
                 (R = LastIndex ; C = 0) ->
                 true
@@ -159,7 +165,7 @@ get_line(Board, R-C, StepR-StepC, Accumulator, Line) :-
     get_line(Board, NewR-NewC, StepR-StepC, NewAccumulator, Line).
 get_line(_, _, _, Line, Line).
 
-% Extrait toutes les lignes et filtre celles qui sont vides ou moin longue que le but:
+% Extrait toutes les lignes et filtre celles qui sont vides:
 get_all_lines(Board, Lines) :-
     get_horizontal_lines(Board, HorizontalLines),
     filter_and_pad_lines(HorizontalLines, HorizontalLinesP),
@@ -171,16 +177,13 @@ get_all_lines(Board, Lines) :-
     filter_and_pad_lines(DiagonalLinesDown, DiagonalLinesDownP),
     flatten([HorizontalLinesP, VerticalLinesP, DiagonalLinesUpP, DiagonalLinesDownP], Lines).
 
-% Vérifie si la ligne vaut la peine d'être traitée:
-line_is_worth_treating(Line) :-
-    get_goal(Goal),
-    not(contains_only_empty_cells(Line)),
-    length(Line, Length),
-    Length >= Goal.
-
 % Ajoute des délimiteurs, x, à une ligne:
 pad_line(Line, PaddedLine) :-
     flatten([x, Line, x], PaddedLine).
+
+% Vérifie si la ligne vaut la peine d'être traitée:
+line_is_worth_treating(Line) :-
+    not(contains_only_empty_cells(Line)).
 
 % Filtre les lignes sans intérêt et ajoute des délimiteurs:
 filter_and_pad_lines(Lines, TreatedLines) :-
@@ -201,3 +204,4 @@ hash_function([C|Cs], Acc, Hash) :-
     cell_to_num(C, Code),
     NewAcc is ((Acc << 2) - Acc) + Code,
     hash_function(Cs, NewAcc, Hash).
+    

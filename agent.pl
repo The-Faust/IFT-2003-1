@@ -38,7 +38,7 @@ agent(Board, Player, Move) :-
 			% Algorithme Alpha-Bêta avec heuristique (profodeur de recherche limitée):
 			(
 				get_time(Time),
-				alphabeta_heuristic(Board-LastPlayer-nil, -inf, inf, _-_-Move, _, 1, Time, 1.5)
+				alphabeta_heuristic(Board-LastPlayer-nil, -inf, inf, _-_-Move, _, 1, Time, 2)
 			)
 		)
 	).

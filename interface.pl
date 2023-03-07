@@ -71,8 +71,10 @@ set_board_size(N) :-
 request_goal(N, Goal) :-
 	(
 		N > 3 ->
-		format(atom(Prompt), 'Choisissez l\'objectif, soit le nombre de jetons à aligner: (min: 3, max: ~d)', N),
-		request_valid_integer(3, N, Prompt, Goal)
+		(
+			format(atom(Prompt), 'Choisissez l\'objectif, soit le nombre de jetons à aligner: (min: 3, max: ~d)', N),
+			request_valid_integer(3, N, Prompt, Goal)
+		)
 		;
 		Goal is 3
 	).
@@ -248,14 +250,16 @@ welcome_screen :-
 	writeln(' horizontalement, verticalement ou en diagonale, sur le grillage.\n'),
 	writeln(' Chaque joueur place à tour de rôle un pion sur le plateau.'),
 	writeln(' Le premier joueur à atteindre 5 pions consécutifs gagne la partie.\n'),
-	draw_line,
-	writeln(' Voici les options disponibles:\n'),
-	writeln('  1 - Jouer à Gomoku sur un plateau 11×11.'),
-	writeln('  2 - Jouer à Gomoku sur un plateau 15×15.'),
-	writeln('  3 - Jouer à Gomoku sur un plateau 19×19.'),
-	writeln('  4 - Jouer à une version complètement paramétrable de Gomoku.'),
-	writeln('  5 - Jouer à Tic-Tac-Toe (Bonus).'),
-	writeln('  6 - Quitter.'),
+	writeln(' ╔══════════════════════════════════════════════════════════════════╗'),
+	writeln(' ║ Voici les options disponibles:                                   ║'),
+	writeln(' ║                                                                  ║'),
+	writeln(' ║ 1 - Jouer à Gomoku sur un plateau 11×11.                         ║'),
+	writeln(' ║ 2 - Jouer à Gomoku sur un plateau 15×15.                         ║'),
+	writeln(' ║ 3 - Jouer à Gomoku sur un plateau 19×19.                         ║'),
+	writeln(' ║ 4 - Jouer à une version complètement paramétrable de Gomoku.     ║'),
+	writeln(' ║ 5 - Jouer à Tic-Tac-Toe (Bonus).                                 ║'),
+	writeln(' ║ 6 - Quitter.                                                     ║'),
+	writeln(' ╚══════════════════════════════════════════════════════════════════╝'),
 	request_valid_integer(1, 6, '\nEntrez le numéro de l\'option choisie:', Selection),
 	switch(Selection, [
 		1 : gomoku(11),
