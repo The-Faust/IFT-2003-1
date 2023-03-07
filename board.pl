@@ -10,9 +10,9 @@
 %   IFT-2003 - Intelligence artificielle I
 %   Hiver 2023
 
-%===========================================%
-%               Gomoku Board.               %
-%===========================================%
+%====================================================%
+%                    Gomoku Board.                   %
+%====================================================%
 
 
 :- use_module(library(clpfd)). % Pour 'transpose'.
@@ -115,7 +115,8 @@ get_horizontal_lines(Board, HorizontalLines) :-
 % Extrait les lignes verticales:
 get_vertical_lines(Board, VerticalLines) :-
     transpose(Board, VerticalLines).
-    
+
+% Extrait les lignes diagonales descendantes:
 get_diagonal_lines_down(Board, DiagonalLinesDown) :-
     get_last_index(Board, LastIndex),
     findall(Line, (
@@ -132,6 +133,7 @@ get_diagonal_lines_down(Board, DiagonalLinesDown) :-
               get_line(Board, R-C, 1-1, [], Line)
             ), DiagonalLinesDown).
 
+% Extrait les lignes diagonales montantes:
 get_diagonal_lines_up(Board, DiagonalLinesUp) :-
     get_last_index(Board, LastIndex),
     findall(Line, (
@@ -157,6 +159,7 @@ get_line(Board, R-C, StepR-StepC, Accumulator, Line) :-
     get_line(Board, NewR-NewC, StepR-StepC, NewAccumulator, Line).
 get_line(_, _, _, Line, Line).
 
+% Extrait toutes les lignes et filtre celles qui sont vides ou moin longue que le but:
 get_all_lines(Board, Lines) :-
     get_horizontal_lines(Board, HorizontalLines),
     filter_and_pad_lines(HorizontalLines, HorizontalLinesP),
@@ -168,15 +171,18 @@ get_all_lines(Board, Lines) :-
     filter_and_pad_lines(DiagonalLinesDown, DiagonalLinesDownP),
     flatten([HorizontalLinesP, VerticalLinesP, DiagonalLinesUpP, DiagonalLinesDownP], Lines).
 
+% Vérifie si la ligne vaut la peine d'être traitée:
 line_is_worth_treating(Line) :-
     get_goal(Goal),
     not(contains_only_empty_cells(Line)),
     length(Line, Length),
     Length >= Goal.
 
+% Ajoute des délimiteurs, x, à une ligne:
 pad_line(Line, PaddedLine) :-
     flatten([x, Line, x], PaddedLine).
 
+% Filtre les lignes sans intérêt et ajoute des délimiteurs:
 filter_and_pad_lines(Lines, TreatedLines) :-
     include(line_is_worth_treating, Lines, FilteredLines),
     concurrent_maplist(pad_line, FilteredLines, TreatedLines).
@@ -190,9 +196,7 @@ create_list(Length, DefaultValue, List) :-
 hash_function(Board, Hash) :-
     flatten(Board, GridString),
     hash_function(GridString, 0, Hash).
-  
 hash_function([], Hash, Hash).
-
 hash_function([C|Cs], Acc, Hash) :-
     cell_to_num(C, Code),
     NewAcc is ((Acc << 2) - Acc) + Code,

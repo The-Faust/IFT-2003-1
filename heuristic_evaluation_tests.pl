@@ -17,7 +17,7 @@
 %====================================================%
 
 
-:- [gomoku].
+:- [heuristic_evaluation].
 
 :- begin_tests(heuristic_evaluation).
 
@@ -25,12 +25,12 @@ test(line_score) :-
 	writeln(''),
 	set_goal(5),
 	
-	% Ligne vide:
+	% ==================== Ligne vide ====================
 	
 	time(check_line_score(xvvvvvvvvvvx, n, EmptyRowScore)),
 	assertion(EmptyRowScore =:= 0),
 	
-	% Opened rows:
+	% ================= rangées ouvertes =================
 	
 	time(check_line_score(xvvvvnvvvvvx, n, Opened1NScore)),
 	assertion(Opened1NScore =:= 3),
@@ -56,7 +56,7 @@ test(line_score) :-
 	time(check_line_score(xvvvbbbbvvvx, n, Opened4BScore)),
 	assertion(Opened4BScore =:= -30000),
 	
-	% Closed rows:
+	% ================= rangées fermées ==================
 	
 	time(check_line_score(xnvvvvvvvvvx, n, ClosedNLeft1Score)),
 	assertion(ClosedNLeft1Score =:= 1),
@@ -97,7 +97,7 @@ test(line_score) :-
 	time(check_line_score(xvvvnbbbbvvx, n, Closed4BScore)),
 	assertion(Closed4BScore =:= -10000),
 	
-	% Full rows:
+	% ================ rangées complètes =================
 	
 	time(check_line_score(xvvvnnnnnvvx, n, Opened5NScore)),
 	assertion(Opened5NScore =:= 30000),
@@ -111,7 +111,7 @@ test(line_score) :-
 	time(check_line_score(xvvvnbbbbbvx, n, Closed5BScore)),
 	assertion(Closed5BScore =:= -300000),
 	
-	% Semi-Opened rows:
+	% ============== rangées semi-ouvertes ===============
 	
 	time(check_line_score(xvvvnvnnnvvx, n, SemiOpened3NScore_1)),
 	assertion(SemiOpened3NScore_1 =:= 2000),
@@ -135,8 +135,7 @@ test(line_score) :-
 	assertion(SemiOpened2BScore =:= -8000),
 	
 	time(check_line_score(xvvnbbvbbnvx, n, SemiOpened1BScore)),
-	assertion(SemiOpened1BScore =:= -8000)
-	.
+	assertion(SemiOpened1BScore =:= -8000).
 
 test(line_score_misc) :-
 	writeln(''),
@@ -145,30 +144,9 @@ test(line_score_misc) :-
 	time(check_line_score(xvvvnbbbvvvxxvvvnnnnbvvx, n, Score1)),
 	assertion(Score1 =:= 0).
 
-%test(evaluate_score_3x3_empty) :-
-%	set_goal(3),
-%	Pos = [
-%		[vvv],
-%		[vvv],
-%		[vvv]]-nil-nil,
-%	
-%	heuristic_score(Pos, Score),
-%	
-%	assertion(Score = 0).
-%
-%test(evaluate_score_3x3_middle_n) :-
-%	set_goal(3),
-%	Pos = [
-%		[vvv],
-%		[vnv],
-%		[vvv]]-n-(1-1),
-%
-%	heuristic_score(Pos, Score),
-%	
-%	assertion(Score = 0.04).
-
 :- end_tests(heuristic_evaluation).
 
+% Affiche le résultat de l'évaluation du score d'une ligne:
 check_line_score(Line, Player, Score) :-
 	atom_chars(Line, LineList),
 	clumped(LineList, RLE),

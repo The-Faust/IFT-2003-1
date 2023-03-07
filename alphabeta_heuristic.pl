@@ -10,9 +10,9 @@
 %   IFT-2003 - Intelligence artificielle I
 %   Hiver 2023
 
-%===========================================%
-%  Algorithme Alpha-Bêta avec heuristique.  %
-%===========================================%
+%====================================================%
+%      Algorithme Alpha-Bêta avec heuristique.       %
+%====================================================%
 
 
 :- module(alphabeta_heuristic, [alphabeta_heuristic/8]).

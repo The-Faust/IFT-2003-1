@@ -22,6 +22,7 @@
 :- begin_tests(evaluation).
 
 test(evaluate_score_3x3_empty) :-
+	set_goal(3),
 	Board = [[v,v,v],
 			 [v,v,v],
 			 [v,v,v]],
@@ -33,6 +34,7 @@ test(evaluate_score_3x3_empty) :-
 	assertion(BestScoreN = 0).
 
 test(evaluate_score_3x3_one_each) :-
+	set_goal(3),
 	Board = [[v,v,n],
 			 [v,v,v],
 			 [b,v,v]],
@@ -44,6 +46,7 @@ test(evaluate_score_3x3_one_each) :-
 	assertion(BestScoreN = 1).
 
 test(evaluate_score_3x3_two_each) :-
+	set_goal(3),
 	Board = [[b,b,v],
 			 [n,v,v],
 			 [n,v,v]],
@@ -55,6 +58,7 @@ test(evaluate_score_3x3_two_each) :-
 	assertion(BestScoreN = 2).
 
 test(evaluate_score_3x3_horizontal) :-
+	set_goal(3),
 	Board = [[b,b,b],
 			 [v,v,v],
 			 [n,n,n]],
@@ -66,6 +70,7 @@ test(evaluate_score_3x3_horizontal) :-
 	assertion(BestScoreN = 3).
 
 test(evaluate_score_3x3_vertical) :-
+	set_goal(3),
 	Board = [[b,v,n],
 			 [b,v,n],
 			 [b,v,n]],
@@ -77,6 +82,7 @@ test(evaluate_score_3x3_vertical) :-
 	assertion(BestScoreN = 3).
 
 test(evaluate_score_3x3_diagonal_1) :-
+	set_goal(3),
 	Board = [[b,v,n],
 			 [v,b,v],
 			 [n,v,b]],
@@ -88,6 +94,7 @@ test(evaluate_score_3x3_diagonal_1) :-
 	assertion(BestScoreN = 1).
 
 test(evaluate_score_3x3_diagonal_2) :-
+	set_goal(3),
 	Board = [[b,v,n],
 			 [v,n,v],
 			 [n,v,b]],
@@ -99,6 +106,7 @@ test(evaluate_score_3x3_diagonal_2) :-
 	assertion(BestScoreN = 3).
 
 test(evaluate_score_5x5) :-
+	set_goal(5),
 	Board = [[b,n,n,v,v],
 			 [v,n,v,v,v],
 			 [v,n,v,v,b],

@@ -91,14 +91,13 @@ turn(Board, Player, NewBoard) :-
 % Permet de sauvegarder les calculs effectués:
 save_cache :-
 	tell('evaluations.cache'),
-	listing([memo_static_score, memo_heuristic_score]),
+	listing([memo_heuristic_score]),
 	told.
 
 % Permet de charger les calculs effectués:
 load_cache :-
 	exists_file('evaluations.cache') ->
 	(
-		retractall(memo_static_score(_)),
 		retractall(memo_heuristic_score(_)),
 		consult('evaluations.cache')
 	)

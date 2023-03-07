@@ -17,7 +17,9 @@
 %====================================================%
 
 
-:- [gomoku].
+:- [board].
+:- [interface].
+:- [agent].
 
 :- begin_tests(alphabeta_heuristic).
 
@@ -184,4 +186,3 @@ show_heuristic_values(Board-_-_, MoveDoneBoard-Player-MoveDone, IdealMove, Ideal
 	coordinates_to_id(IdealMove, IM_ID),
 	format('Position idéale: ~w;  Valeur heuristique: ~w~n', [IM_ID, IdealMoveScore]),
 	display_gomoku_board(IdealMoveBoard).
-	

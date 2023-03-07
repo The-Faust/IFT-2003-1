@@ -10,11 +10,11 @@
 %   IFT-2003 - Intelligence artificielle I
 %   Hiver 2023
 
-%===========================================%
-%    Tests unitaires pour board.pl.         %
-%                                           %
-%    Exécuter les tests: ?- run_tests.      %
-%===========================================%
+%====================================================%
+%    Tests unitaires pour board.pl.                  %
+%                                                    %
+%    Exécuter les tests: ?- run_tests.               %
+%====================================================%
 
 :- [board].
 :- [interface].

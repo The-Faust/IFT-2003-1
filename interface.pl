@@ -10,9 +10,9 @@
 %   IFT-2003 - Intelligence artificielle I
 %   Hiver 2023
 
-%===========================================%
-%                 Interface.                %
-%===========================================%
+%====================================================%
+%                     Interface.                     %
+%====================================================%
 
 
 :- [board].
@@ -178,9 +178,9 @@ conclude_turn(NewBoard-Player-Move, NextPlayer) :-
 		StaticScore >= Goal ->
 		(
 			draw_line,
-			writeln('\n                  ╔═══════════════════════════╗'),
-			format('                  ║ Le joueur ~w (~w) gagne! ║\n', [PlayersName, PlayersSymbol]),
-			writeln('                  ╚═══════════════════════════╝\n'),
+			writeln('\n                  ╔════════════════════════════╗'),
+			format('                  ║ Le joueur ~w (~w) gagne! ~47|║\n', [PlayersName, PlayersSymbol]),
+			writeln('                  ╚════════════════════════════╝\n'),
 			draw_line,
 			end_game
 		)
@@ -197,7 +197,6 @@ request_continue_playing :-
 		string_upper(Input, Input_Upper),
 		string_chars(Input_Upper, [FirstLetter|_]),
 		(
-			char_code(FirstLetter, Code),
 			(
 				member(FirstLetter, ['O', 'Y', 'N', 'Q']) ->
 				(
@@ -217,8 +216,12 @@ request_continue_playing :-
 
 % Informe l'utilisateur qu'on a obtenu un impasse:
 display_tie :-
-	writeln('Le plateau de jeu est plein!'),
-	writeln('Il s\'agit d\'un impasse!'),
+	draw_line,
+	writeln('\n                  ╔══════════════════════════════╗'),
+	writeln('                  ║ Le plateau de jeu est plein! ║'),
+	writeln('                  ║ Il s\'agit d\'un impasse!      ║'),
+	writeln('                  ╚══════════════════════════════╝\n'),
+	draw_line,
 	end_game.
 
 % Permet d'imiter le switch case:

@@ -10,9 +10,9 @@
 %   IFT-2003 - Intelligence artificielle I
 %   Hiver 2023
 
-%===========================================%
-%              Agent intelligent .          %
-%===========================================%
+%====================================================%
+%                  Agent intelligent .               %
+%====================================================%
 
 
 :- [heuristic_evaluation].
@@ -25,18 +25,22 @@ agent(Board, Player, Move) :-
 	other(Player, LastPlayer),
 	(
 		% Vérifie s'il est possible de gagner sur ce tour:
-%		winning_move(Board, Player, Move)
-%		;
-%		% Vérifie s'il est possible de perdre au prochain tour:
-%		winning_move(Board, LastPlayer, Move)
-%		;
-		% Algorithme Minimax:
-%		minimax(Board-LastPlayer-nil, _-_-Move, _).
-		% Algorithme Alpha-Bêta:
-%		alphabeta(Board-LastPlayer-nil, -inf, inf, _-_-Move, _)
-		% Algorithme Alpha-Bêta avec heuristique (profodeur de recherche limitée):
-		get_time(Time),
-		alphabeta_heuristic(Board-LastPlayer-nil, -inf, inf, _-_-Move, _, 1, Time, 1.5)
+		winning_move(Board, Player, Move)
+		;
+		% Vérifie s'il est possible de perdre au prochain tour:
+		winning_move(Board, LastPlayer, Move)
+		;
+		(
+			length(Board, 3) ->
+			% Algorithme Alpha-Bêta:
+			alphabeta(Board-LastPlayer-nil, -inf, inf, _-_-Move, _)
+			;
+			% Algorithme Alpha-Bêta avec heuristique (profodeur de recherche limitée):
+			(
+				get_time(Time),
+				alphabeta_heuristic(Board-LastPlayer-nil, -inf, inf, _-_-Move, _, 1, Time, 1.5)
+			)
+		)
 	).
 
 % Établi les transitions possibles à partir d'un état:
@@ -56,7 +60,7 @@ moves(Board-LastPlayer-_, PosList) :-
 
 % Évalue la valeur d'un état pour un joueur:
 staticval(Board-_-_, Value) :-
-	game_over(Board, Winner), !,
+	game_over(Board, Winner),
 	(
 		Winner = nil ->
 		Value is 0
