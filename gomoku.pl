@@ -56,10 +56,8 @@ end_game :-
 
 % Établi un tour complet et boucle jusqu'à ce que le jeu termine:
 turn(Board, Player, NewBoard) :-
-	% Suivi de la durée d'un tour:
-	statistics(runtime, [Start|_]),
 	% Annonce le prochain tour:
-	introduce_turn(Player),
+	introduce_turn(Player, StartTime),
 	(   % Vérifie s'il reste un emplacement vide:
 		has_an_empty_cell(Board) ->
 		(
@@ -80,11 +78,7 @@ turn(Board, Player, NewBoard) :-
 		display_tie
 	),
 	% Conclu le tour:
-	conclude_turn(NewBoard-Player-Move, NextPlayer),
-	% Affiche les statistiques (temps écoulé):
-	statistics(runtime, [End|_]),
-	Time is (End - Start)/1000,
-	format('Le tour a pris: ~3f secondes.~n', [Time]),
+	conclude_turn(NewBoard-Player-Move, NextPlayer, StartTime),
 	% Récursion jusqu'à l'atteinte d'un état final:
 	turn(NewBoard, NextPlayer, _).
 

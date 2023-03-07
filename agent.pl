@@ -60,7 +60,7 @@ moves(Board-LastPlayer-_, PosList) :-
 
 % Évalue la valeur d'un état pour un joueur:
 staticval(Board-_-_, Value) :-
-	game_over(Board, Winner),
+	game_over(Board, Winner), !,
 	(
 		Winner = nil ->
 		Value is 0

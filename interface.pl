@@ -41,7 +41,8 @@ coordinates_to_id(R-C, ID) :-
 % Affiche le plateau de jeu:
 display_gomoku_board(Board) :-
 	get_last_index(Board, LastIndex),
-	write('   '),
+	Alignement is (46 - LastIndex) // 2,
+	format('~*|   ', [Alignement]),
 	forall(   % Itère sur le nom des colonnes.
 		between(0, LastIndex, C),
 		(
@@ -54,7 +55,7 @@ display_gomoku_board(Board) :-
 		nth1(Y, Board, Row),
 		(
 			% Affiche le nom de la ligne:
-			format('~|~t~d~2+ ', [Y]),
+			format('~*|~|~t~d~2+ ', [Alignement, Y]),
 			% Affiche le contenu de la ligne:
 			maplist([C]>>(cell_to_char(C, Char), format('─~w', [Char])), Row),
 			write('─\n')
@@ -154,17 +155,18 @@ draw_line :-
 	writeln('─────────────────────────────────────────────────────────────────────').
 
 % Efface le contenu de l'écran (clear screen):
-cls :- write('\33\[2J').
+cls :- write('\33\[2J\n').
 
 % Affiche à qui le tour appartient:
-introduce_turn(Player) :-
+introduce_turn(Player, StartTime) :-
 	draw_line,
 	players_name(Player, PlayersName),
 	cell_to_char(Player, PlayersSymbol),
-	format('Le joueur ~w (~w) joue son tour:\n\n', [PlayersName, PlayersSymbol]).
+	format('Le joueur ~w (~w) joue son tour:\n\n', [PlayersName, PlayersSymbol]),
+	get_time(StartTime).
 
 % Affiche le résultat du tour qui termine:
-conclude_turn(NewBoard-Player-Move, NextPlayer) :-
+conclude_turn(NewBoard-Player-Move, NextPlayer, StartTime) :-
 	other(Player, NextPlayer),
 	display_gomoku_board(NewBoard),
 	static_score(NewBoard, Player, StaticScore),
@@ -172,9 +174,13 @@ conclude_turn(NewBoard-Player-Move, NextPlayer) :-
 	players_name(Player, PlayersName),
 	cell_to_char(Player, PlayersSymbol),
 	coordinates_to_id(Move, MoveID),
-	format('Le joueur ~w (~w) a joué la position ~w.\n\n', [PlayersName, PlayersSymbol, MoveID]),
-	format('Score statique du joueur: ~d\n', [StaticScore]),
-	format('Score heuristique du joueur: ~d\n\n', [HeuristicScore]),
+	get_time(EndTime),
+	Time is EndTime - StartTime,
+	writeln('┏━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━┓'),
+	format('┃ Joueur: ~w (~w) ~21|┃ Position jouée: ~w ~43|┃ Durée du tour: ~3fs~68|┃\n', [PlayersName, PlayersSymbol, MoveID, Time]),
+	writeln('┣━━━━━━━━━━━━━━━━━━━━┻━━━━━━━━┳━━━━━━━━━━━━┻━━━━━━━━━━━━━━━━━━━━━━━━┫'),
+	format('┃ Alignement le plus long: ~d ~30|┃ Valeur heuristique de l\'état: ~d ~68|┃\n', [StaticScore, HeuristicScore]),
+	writeln('┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┻━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛'),
 	(
 		get_goal(Goal),
 		StaticScore >= Goal ->
