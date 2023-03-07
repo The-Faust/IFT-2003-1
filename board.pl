@@ -79,13 +79,6 @@ has_an_empty_cell(Board) :-
 contains_only_empty_cells(List) :-
     \+ (member(Element, List), Element \= v).
 
-is_repeating_v(Atom) :-
-  atom_chars(Atom, Chars),
-  repeat_v(Chars).
-  
-repeat_v([]).
-repeat_v([v|Chars]) :- repeat_v(Chars).
-
 % Vérifie si les coordonnées existent sur le plateau:
 are_valid_coordinates(Board, Row-Col) :-
     get_last_index(Board, LastIndex),
@@ -114,40 +107,6 @@ get_a_random_move(Board, Row-Col) :-
 % Permet d'effectuer un mouvement:
 make_a_move(Board, Player, Move, NewBoard) :-
     set_cell_content(Board, Move, Player, NewBoard).
-
-% Effectue une rotation de 90º du plateau:
-rotate_board(Board, RotatedBoard) :-
-    transpose(Board, TransposedBoard),
-    maplist(reverse, TransposedBoard, RotatedBoard).
-
-% Effectue une réflexion selon l'axe horizontal du plateau:
-flip_horizontal(Board, FlippedBoard) :-
-    reverse(Board, FlippedBoard).
-
-% Effectue une réflexion selon l'axe vertical du plateau:
-flip_vertical(Board, FlippedBoard) :-
-    maplist(reverse, Board, FlippedBoard).
-
-% Effectue une réflexion selon la première diagonale du plateau:
-flip_first_diagonal(Board, FlippedBoard) :-
-    transpose(Board, FlippedBoard).
-
-% Effectue une réflexion selon la seconde diagonale du plateau:
-flip_second_diagonal(Board, FlippedBoard) :-
-    reverse(Board, ReversedBoard),
-    transpose(ReversedBoard, TransposedBoard),
-    reverse(TransposedBoard, FlippedBoard).
-
-% Permet d'inverser le plateau de jeu (b <-> n):
-invert_board(Board, InvertedBoard) :-
-    maplist(invert_row, Board, InvertedBoard).
-
-invert_row(Row, InvertedRow) :-
-    maplist(invert_value, Row, InvertedRow).
-    
-invert_value(b, n).
-invert_value(n, b).
-invert_value(X, X) :- dif(X, b), dif(X, n).
 
 % Extrait les lignes horizontales:
 get_horizontal_lines(Board, HorizontalLines) :-
@@ -200,20 +159,14 @@ get_line(_, _, _, Line, Line).
 
 get_all_lines(Board, Lines) :-
     get_horizontal_lines(Board, HorizontalLines),
-    pad_lines(HorizontalLines, HorizontalLinesP),
+    filter_and_pad_lines(HorizontalLines, HorizontalLinesP),
     get_vertical_lines(Board, VerticalLines),
-    pad_lines(VerticalLines, VerticalLinesP),
+    filter_and_pad_lines(VerticalLines, VerticalLinesP),
     get_diagonal_lines_up(Board, DiagonalLinesUp),
-    pad_lines(DiagonalLinesUp, DiagonalLinesUpP),
+    filter_and_pad_lines(DiagonalLinesUp, DiagonalLinesUpP),
     get_diagonal_lines_down(Board, DiagonalLinesDown),
     filter_and_pad_lines(DiagonalLinesDown, DiagonalLinesDownP),
     flatten([HorizontalLinesP, VerticalLinesP, DiagonalLinesUpP, DiagonalLinesDownP], Lines).
-    
-pad_line(Line, PaddedLine) :-
-    flatten([x, Line, x], PaddedLine).
-    
-pad_lines(Lines, PaddedLines) :-
-    concurrent_maplist(pad_line, Lines, PaddedLines).
 
 line_is_worth_treating(Line) :-
     get_goal(Goal),
@@ -221,20 +174,17 @@ line_is_worth_treating(Line) :-
     length(Line, Length),
     Length >= Goal.
 
-filter_lines(Lines, FilteredLines) :-
-    include(line_is_worth_treating, Lines, FilteredLines).
+pad_line(Line, PaddedLine) :-
+    flatten([x, Line, x], PaddedLine).
 
 filter_and_pad_lines(Lines, TreatedLines) :-
-    filter_lines(Lines, FilteredLines),
+    include(line_is_worth_treating, Lines, FilteredLines),
     concurrent_maplist(pad_line, FilteredLines, TreatedLines).
 
 % Créer une liste avec logueur spécifiée et une valeur par défaut:
 create_list(Length, DefaultValue, List) :-
     length(List, Length),
     maplist(=(DefaultValue), List), !.
-
-% Défini "n'importe quelle séquence" avec les points de suspension:
-... --> [] | [_], ... .
 
 % Permet de créer l'empreinte d'une configuration du plateau:
 hash_function(Board, Hash) :-
