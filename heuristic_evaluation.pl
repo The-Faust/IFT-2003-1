@@ -58,15 +58,15 @@ sum_score(Player, [X|Xs], PreviousScore, Score) :-
 
 is_a_player(Symbol) :- dif(Symbol, x), dif(Symbol, v), !.
 
-pattern(Playing, [v-A, Playing-N, v-B], opened, N, Goal) :- Goal #=< A + N + B, dif(A, 1), dif(B, 1), is_a_player(Playing), !.
-pattern(Playing, [P-_, v-1, Playing-N, v-B], opened, N, Goal) :- Goal #=< 1 + N + B, dif(P, Playing), is_a_player(Playing), !.
-pattern(Playing, [v-A, Playing-N, v-1, Q-_], opened, N, Goal) :- Goal #=< A + N + 1, dif(Q, Playing), is_a_player(Playing), !.
-pattern(Playing, [P-_, v-1, Playing-N, v-1, Q-_], opened, N, Goal) :- Goal #=< N + 2, dif(P, Playing), dif(Q, Playing), is_a_player(Playing), !.
+pattern(Playing, [v-A, Playing-N, v-B], opened, N, Goal) :- N #< Goal, Goal #=< A + N + B, dif(A, 1), dif(B, 1), is_a_player(Playing), !.
+pattern(Playing, [P-_, v-1, Playing-N, v-B], opened, N, Goal) :- N #< Goal, Goal #=< 1 + N + B, dif(P, Playing), is_a_player(Playing), !.
+pattern(Playing, [v-A, Playing-N, v-1, Q-_], opened, N, Goal) :- N #< Goal, Goal #=< A + N + 1, dif(Q, Playing), is_a_player(Playing), !.
+pattern(Playing, [P-_, v-1, Playing-N, v-1, Q-_], opened, N, Goal) :- N #< Goal, Goal #=< N + 2, dif(P, Playing), dif(Q, Playing), is_a_player(Playing), !.
 
-pattern(Playing, [v-A, Playing-N, Y-_], closed, N, Goal) :- other(Playing, Other), member(Y, [x, Other]), Goal #=< A + N, dif(A, 1), is_a_player(Playing), !.
-pattern(Playing, [X-_, Playing-N, v-B], closed, N, Goal) :- other(Playing, Other), member(X, [x, Other]), Goal #=< N + B, dif(B, 1), is_a_player(Playing), !.
-pattern(Playing, [P-_, v-1, Playing-N, Y-_], closed, N, Goal) :- other(Playing, Other), member(Y, [x, Other]), Goal #=< 1 + N, dif(P, Playing), is_a_player(Playing), !.
-pattern(Playing, [X-_, Playing-N, v-1, Q-_], closed, N, Goal) :- other(Playing, Other), member(X, [x, Other]), Goal #=< N + 1, dif(Q, Playing), is_a_player(Playing), !.
+pattern(Playing, [v-A, Playing-N, Y-_], closed, N, Goal) :- N #< Goal, other(Playing, Other), member(Y, [x, Other]), Goal #=< A + N, dif(A, 1), is_a_player(Playing), !.
+pattern(Playing, [X-_, Playing-N, v-B], closed, N, Goal) :- N #< Goal, other(Playing, Other), member(X, [x, Other]), Goal #=< N + B, dif(B, 1), is_a_player(Playing), !.
+pattern(Playing, [P-_, v-1, Playing-N, Y-_], closed, N, Goal) :- N #< Goal, other(Playing, Other), member(Y, [x, Other]), Goal #=< 1 + N, dif(P, Playing), is_a_player(Playing), !.
+pattern(Playing, [X-_, Playing-N, v-1, Q-_], closed, N, Goal) :- N #< Goal, other(Playing, Other), member(X, [x, Other]), Goal #=< N + 1, dif(Q, Playing), is_a_player(Playing), !.
 
 pattern(Playing, [v-_, Playing-M, v-1, Playing-N, v-_], semi_opened3, S, Goal) :- S #= M + N, Goal #=< S + 1, is_a_player(Playing), !.
 pattern(Playing, [P-_, Playing-M, v-1, Playing-N, Q-_], semi_opened2, S, Goal) :- S #= M + N, Goal #=< S + 1, ( dif(P, v) ; dif(Q, v) ), is_a_player(Playing), !.
@@ -74,9 +74,9 @@ pattern(Playing, [P-_, Playing-M, v-1, Playing-N, Q-_], semi_opened1, S, Goal) :
 
 pattern(Playing, [Playing-N], win, _, Goal) :- Goal #=< N, is_a_player(Playing), !.
 
-value(win, _, _, 20000) :- !.
-value(opened, N, Goal, Value) :- Value is 20000/(10**(Goal - N)), !.
-value(closed, N, Goal, Value) :- Value is 8000/(10**(Goal - N)), !.
-value(semi_opened3, N, Goal, Value) :- Value is 18000/(10**(Goal - N)), !.
-value(semi_opened2, N, Goal, Value) :- Value is 6000/(10**(Goal - N)), !.
-value(semi_opened1, N, Goal, Value) :- Value is 4000/(10**(Goal - N)), !.
+value(win, _, Goal, Value) :- Value is 3 * 10**(Goal - 1), !.
+value(opened, N, _, Value) :- Value is 3 * 10**(N - 1), !.
+value(closed, N, _, Value) :- Value is 1 * 10**(N - 1), !.
+value(semi_opened3, N, _, Value) :- Value is 2 * 10**(N - 1), !.
+value(semi_opened2, N, _, Value) :- Value is 8 * 10**(N - 2), !.
+value(semi_opened1, N, _, Value) :- Value is 5 * 10**(N - 2), !.

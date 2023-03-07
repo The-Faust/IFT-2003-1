@@ -169,7 +169,7 @@ conclude_turn(NewBoard-Player-Move, NextPlayer) :-
 	coordinates_to_id(Move, MoveID),
 	format('Le joueur ~w (~w) a joué la position ~w.\n\n', [PlayersName, PlayersSymbol, MoveID]),
 	format('Score statique du joueur: ~d\n', [StaticScore]),
-	format('Score heuristique du joueur: ~3f\n', [HeuristicScore]),
+	format('Score heuristique du joueur: ~d\n\n', [HeuristicScore]),
 	(
 		get_goal(Goal),
 		StaticScore >= Goal ->

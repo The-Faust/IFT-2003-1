@@ -213,7 +213,7 @@ pad_line(Line, PaddedLine) :-
     flatten([x, Line, x], PaddedLine).
     
 pad_lines(Lines, PaddedLines) :-
-    maplist(pad_line, Lines, PaddedLines).
+    concurrent_maplist(pad_line, Lines, PaddedLines).
 
 line_is_worth_treating(Line) :-
     get_goal(Goal),
@@ -226,7 +226,7 @@ filter_lines(Lines, FilteredLines) :-
 
 filter_and_pad_lines(Lines, TreatedLines) :-
     filter_lines(Lines, FilteredLines),
-    maplist(pad_line, FilteredLines, TreatedLines).
+    concurrent_maplist(pad_line, FilteredLines, TreatedLines).
 
 % Créer une liste avec logueur spécifiée et une valeur par défaut:
 create_list(Length, DefaultValue, List) :-
