@@ -10,9 +10,9 @@
 %   IFT-2003 - Intelligence artificielle I
 %   Hiver 2023
 
-%===========================================%
-%     Évaluation heuristique du score.      %
-%===========================================%
+%====================================================%
+%         Évaluation heuristique du score.           %
+%====================================================%
 
 
 :- [board].
@@ -21,137 +21,62 @@
 :- dynamic memo_heuristic_score/3.	% Mémoïsation du score pour une configuration.
 
 % Récupère l'alignement de jetons le plus long mémoïsé pour un joueur:
-heuristic_score(Board, TotalScore) :-
+heuristic_score(Board-_-_,Score) :-
 	get_goal(Goal),
 	hash_function(Board, Hash),
-	memo_heuristic_score(Hash, Goal, TotalScore),
+	memo_heuristic_score(Hash, Goal, Score),
 	!.
 
-% Évalue le score heuristique:
-heuristic_score(Board, TotalScore) :-
+heuristic_score(Board-Player-_, Score) :-
 	get_goal(Goal),
-	get_last_index(Board, LastIndex),
-	get_horizontal_lines(Board, HorizontalLines),
-	get_vertical_lines(Board, VerticalLines),
-	M is Goal - 1,
-	N is LastIndex - M,
-	findall(Score,
-				(
-					member(Line, HorizontalLines),
-					(
-						contains_only_empty_cells(Line) ->
-						Score is 0
-						;
-						line_score(Line, Score)
-					)
-				),
-				HorizontalLinesScores
-	),
-	findall(Score,
-				(
-					member(Line, VerticalLines),
-					(
-						contains_only_empty_cells(Line) ->
-						Score is 0
-						;
-						line_score(Line, Score)
-					)
-				),
-				VerticalLinesScores
-	),
-	findall(Score,
-				(
-					between(0, N, R),
-					between(0, N, C),
-					(
-						(R = 0 ; C = 0) ->
-						true
-						;
-						(R = 0)
-						;
-						(C = 0)
-					),
-					get_line(Board, R-C, 1-1, [], Line),
-					(
-						contains_only_empty_cells(Line) ->
-						Score is 0
-						;
-						line_score(Line, Score)
-					)
-				),
-				DiagonalLinesDownScores
-	),
-	findall(Score,
-				(
-					between(M, LastIndex, R),
-					between(0, N, C),
-					(
-						(R = LastIndex ; C = 0) ->
-						true
-						;
-						(R = LastIndex)
-						;
-						(C = 0)
-					),
-					get_line(Board, R-C, -1-1, [], Line),
-					(
-						contains_only_empty_cells(Line) ->
-						Score is 0
-						;
-						line_score(Line, Score)
-					)
-				),
-				DiagonalLinesUpScores
-	),
+	get_all_lines(Board, Lines),
+	clumped(Lines, RLE),
+	sum_score(Player, RLE, Score),
 	!,
-	flatten([HorizontalLinesScores, VerticalLinesScores, DiagonalLinesDownScores, DiagonalLinesUpScores], Scores),
-	sum_list(Scores, TotalScore),
 	hash_function(Board, Hash),
-	assertz(memo_heuristic_score(Hash, Goal, TotalScore)).
+	assertz(memo_heuristic_score(Hash, Goal, Score)).
 
-% Évalue le score pour une ligne donnée:
-line_score(Line, Score) :-
+sum_score(Player, Line, Score) :-
+	sum_score(Player, Line, 0, Score).
+sum_score(_, [], Score, Score) :- !.
+sum_score(Player, [X|Xs], PreviousScore, Score) :-
 	get_goal(Goal),
-	findall(Value, (
-		Goal2 is Goal + 2,
-		between(1, Goal2, L),
-		member(P-S, [n-1, b-(-1)]),
-		L2 is L + 2,
-		phrase(fixed_open_rep(P, L, max(Goal, L2)), Line),
-		value(L, o, V),
-		Value is S * V
-	), OpenVals),
-	findall(Value, (
-		between(2, Goal, L),
-		member(P-S, [n-1, b-(-1)]),
-		phrase(fixed_closed_rep(P, L, Goal), Line),
-		value(L, c, V),
-		Value is S * V
-	), ClosedVals),
-	findall(Value, (
-		member(P-S, [n-1, b-(-1)]),
-		phrase(full_rep(P, Goal), Line),
-		value(Goal, f, V),
-		Value is S * V
-	), FullVals),
-	findall(Value, (
-		Goal_1 is Goal - 1,
-		member(P-S, [n-1, b-(-1)]),
-		phrase(fixed_alt(P, Goal_1, F), Line),
-		value(Goal_1, F, V),
-		Value is S * V
-	), OpenValsAlt),
-	!,
-	flatten([OpenVals, ClosedVals, FullVals, OpenValsAlt], Values),
-	sum_list(Values, Score).
+	(
+		( append(Pattern, _, [X|Xs]), pattern(Playing, Pattern, Type, N, Goal) ) ->
+		(
+			( Playing = Player -> Factor is 1 ; Factor is 10 ),
+			( Playing = n -> Sign = 1 ; Sign = -1 ),
+			value(Type, N, Goal, Value),
+			NewScore is PreviousScore + Sign * Factor * Value
+		)
+		;
+		(
+			NewScore is PreviousScore
+		)
+	),
+	sum_score(Player, Xs, NewScore, Score).
 
-% Établi la valeur d'une séquence selon le type (o: ouverte, c: fermée, f: complète):
-value(1, o, 0.01) :- !.
-value(Goal_1, o, Value) :- get_goal(Goal), Goal_1 is Goal - 1, Value is 4**(Goal_1**2), !.
-value(L, o, Value) :- Value is (4**(L**2)), !.
-value(Goal_1, c, Value) :- get_goal(Goal), Goal_1 is Goal - 1, Value is (4**(Goal_1**2))/2, !.
-value(L, c, Value) :- Value is (4**((L - 1)**2)), !.
-value(L, f, Value) :- Value is 4**(L**2), !.
-value(L, a1, Value) :- Value is (4**(L**2))/2, !.
-value(L, a2, Value) :- Value is 2*(4**(L**2))/3, !.
-value(L, a3, Value) :- Value is 4**(L**2), !.
+is_a_player(Symbol) :- dif(Symbol, x), dif(Symbol, v), !.
+
+pattern(Playing, [v-A, Playing-N, v-B], opened, N, Goal) :- N #< Goal, Goal #=< A + N + B, dif(A, 1), dif(B, 1), is_a_player(Playing), !.
+pattern(Playing, [P-_, v-1, Playing-N, v-B], opened, N, Goal) :- N #< Goal, Goal #=< 1 + N + B, dif(P, Playing), is_a_player(Playing), !.
+pattern(Playing, [v-A, Playing-N, v-1, Q-_], opened, N, Goal) :- N #< Goal, Goal #=< A + N + 1, dif(Q, Playing), is_a_player(Playing), !.
+pattern(Playing, [P-_, v-1, Playing-N, v-1, Q-_], opened, N, Goal) :- N #< Goal, Goal #=< N + 2, dif(P, Playing), dif(Q, Playing), is_a_player(Playing), !.
+
+pattern(Playing, [v-A, Playing-N, Y-_], closed, N, Goal) :- N #< Goal, other(Playing, Other), member(Y, [x, Other]), Goal #=< A + N, dif(A, 1), is_a_player(Playing), !.
+pattern(Playing, [X-_, Playing-N, v-B], closed, N, Goal) :- N #< Goal, other(Playing, Other), member(X, [x, Other]), Goal #=< N + B, dif(B, 1), is_a_player(Playing), !.
+pattern(Playing, [P-_, v-1, Playing-N, Y-_], closed, N, Goal) :- N #< Goal, other(Playing, Other), member(Y, [x, Other]), Goal #=< 1 + N, dif(P, Playing), is_a_player(Playing), !.
+pattern(Playing, [X-_, Playing-N, v-1, Q-_], closed, N, Goal) :- N #< Goal, other(Playing, Other), member(X, [x, Other]), Goal #=< N + 1, dif(Q, Playing), is_a_player(Playing), !.
+
+pattern(Playing, [v-_, Playing-M, v-1, Playing-N, v-_], semi_opened3, S, Goal) :- S #= M + N, Goal #=< S + 1, is_a_player(Playing), !.
+pattern(Playing, [P-_, Playing-M, v-1, Playing-N, Q-_], semi_opened2, S, Goal) :- S #= M + N, Goal #=< S + 1, ( dif(P, v) ; dif(Q, v) ), is_a_player(Playing), !.
+pattern(Playing, [P-_, Playing-M, v-1, Playing-N, Q-_], semi_opened1, S, Goal) :- S #= M + N, Goal #=< S + 1, ( dif(P, v) , dif(Q, v) ), is_a_player(Playing), !.
+
+pattern(Playing, [Playing-N], win, _, Goal) :- Goal #=< N, is_a_player(Playing), !.
+
+value(win, _, Goal, Value) :- Value is 3 * 10**(Goal - 1), !.
+value(opened, N, _, Value) :- Value is 3 * 10**(N - 1), !.
+value(closed, N, _, Value) :- Value is 1 * 10**(N - 1), !.
+value(semi_opened3, N, _, Value) :- Value is 2 * 10**(N - 1), !.
+value(semi_opened2, N, _, Value) :- Value is 8 * 10**(N - 2), !.
+value(semi_opened1, N, _, Value) :- Value is 5 * 10**(N - 2), !.

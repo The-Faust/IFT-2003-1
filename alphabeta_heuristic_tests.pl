@@ -17,11 +17,13 @@
 %====================================================%
 
 
-:- [gomoku].
+:- [board].
+:- [interface].
+:- [agent].
 
 :- begin_tests(alphabeta_heuristic).
 
-test(alphabeta_heuristic_1) :-
+test(prevent_open_four) :-
 	set_goal(5),
 	Pos = [
 		[v,v,v,v,v,v,v,v,v,v,v],
@@ -41,19 +43,17 @@ test(alphabeta_heuristic_1) :-
 	Depth is 1,
 	get_time(TimeStamp),
 	TimeLimit is 1.5,
-	
-	Pos = Board-_-_,
-	alphabeta_heuristic(Pos, Alpha, Beta, GoodPos, Val, Depth, TimeStamp, TimeLimit),
+
+	time(alphabeta_heuristic(Pos, Alpha, Beta, GoodPos, Val, Depth, TimeStamp, TimeLimit)),
 	GoodPos = _-_-MoveDone,
 	
 	IdealMove = 2-6,
-	Player = n,
-	show_heuristic_values(Board, Player, MoveDone, IdealMove, IdealMoveScore),
+	show_heuristic_values(Pos, GoodPos, IdealMove, IdealMoveScore),
 	
 	assertion(MoveDone = IdealMove),
 	assertion(Val = IdealMoveScore).
 
-test(alphabeta_heuristic_2) :-
+test(prevent_closed_four) :-
 	set_goal(5),
 	Pos = [
 		[v,v,v,v,v,v,v,v,v,v,v],
@@ -73,19 +73,17 @@ test(alphabeta_heuristic_2) :-
 	Depth is 1,
 	get_time(TimeStamp),
 	TimeLimit is 1.5,
-	
-	Pos = Board-_-_,
-	alphabeta_heuristic(Pos, Alpha, Beta, GoodPos, Val, Depth, TimeStamp, TimeLimit),
+
+	time(alphabeta_heuristic(Pos, Alpha, Beta, GoodPos, Val, Depth, TimeStamp, TimeLimit)),
 	GoodPos = _-_-MoveDone,
 	
 	IdealMove = 9-4,
-	Player = n,
-	show_heuristic_values(Board, Player, MoveDone, IdealMove, IdealMoveScore),
+	show_heuristic_values(Pos, GoodPos, IdealMove, IdealMoveScore),
 	
 	assertion(MoveDone = IdealMove),
 	assertion(Val = IdealMoveScore).
 
-test(alphabeta_heuristic_3) :-
+test(prevent_semi3_four) :-
 	set_goal(5),
 	Pos = [
 		[v,v,v,v,v,v,v,v,v,v,v],
@@ -105,14 +103,72 @@ test(alphabeta_heuristic_3) :-
 	Depth is 1,
 	get_time(TimeStamp),
 	TimeLimit is 1.5,
-	
-	Pos = Board-_-_,
-	alphabeta_heuristic(Pos, Alpha, Beta, GoodPos, Val, Depth, TimeStamp, TimeLimit),
+
+	time(alphabeta_heuristic(Pos, Alpha, Beta, GoodPos, Val, Depth, TimeStamp, TimeLimit)),
 	GoodPos = _-_-MoveDone,
 	
 	IdealMove = 9-3,
-	Player = b,
-	show_heuristic_values(Board, Player, MoveDone, IdealMove, IdealMoveScore),
+	show_heuristic_values(Pos, GoodPos, IdealMove, IdealMoveScore),
+	
+	assertion(MoveDone = IdealMove),
+	assertion(Val = IdealMoveScore).
+
+test(prevent_semi3_three) :-
+	set_goal(5),
+	Pos = [
+		[v,v,v,v,v,v,v,v,v,v,v],
+		[v,v,v,n,v,v,v,v,v,v,v],
+		[v,v,v,v,b,v,b,n,n,v,v],
+		[v,v,v,v,v,n,v,b,v,v,v],
+		[v,v,v,v,v,b,n,v,v,b,v],
+		[v,v,v,v,b,n,n,n,n,b,v],
+		[v,v,v,b,n,b,b,b,b,n,v],
+		[v,v,n,b,n,b,b,b,b,n,v],
+		[v,b,v,v,n,b,n,n,n,b,v],
+		[v,v,v,v,b,n,n,n,v,v,v],
+		[v,v,v,n,v,v,b,v,v,v,v]]-b-(2-6),
+	Alpha = -inf,
+	Beta = inf,
+	
+	Depth is 1,
+	get_time(TimeStamp),
+	TimeLimit is 1.5,
+	
+	time(alphabeta_heuristic(Pos, Alpha, Beta, GoodPos, Val, Depth, TimeStamp, TimeLimit)),
+	GoodPos = _-_-MoveDone,
+	
+	IdealMove = 4-3,
+	show_heuristic_values(Pos, GoodPos, IdealMove, IdealMoveScore),
+	
+	assertion(MoveDone = IdealMove),
+	assertion(Val = IdealMoveScore).
+
+test(win_next_turn) :-
+	set_goal(5),
+	Pos = [
+		[v,n,v,v,v,v,b,v,v,n,v],
+		[v,v,b,n,v,n,n,v,b,v,v],
+		[b,v,n,b,n,v,b,b,b,b,n],
+		[v,n,n,n,b,v,b,n,n,n,v],
+		[b,v,n,b,b,b,b,n,v,v,v],
+		[v,b,n,n,n,b,n,n,b,v,v],
+		[v,v,b,v,n,n,b,b,n,v,v],
+		[v,v,v,n,b,b,n,b,v,v,v],
+		[v,v,v,v,v,v,b,n,n,v,v],
+		[v,v,v,v,v,v,v,v,b,v,v],
+		[v,v,v,v,v,v,v,v,v,v,v]]-n-(2-10),
+	Alpha = -inf,
+	Beta = inf,
+	
+	Depth is 1,
+	get_time(TimeStamp),
+	TimeLimit is 1.5,
+	
+	time(alphabeta_heuristic(Pos, Alpha, Beta, GoodPos, Val, Depth, TimeStamp, TimeLimit)),
+	GoodPos = _-_-MoveDone,
+	
+	IdealMove = 2-5,
+	show_heuristic_values(Pos, GoodPos, IdealMove, IdealMoveScore),
 	
 	assertion(MoveDone = IdealMove),
 	assertion(Val = IdealMoveScore).
@@ -120,11 +176,10 @@ test(alphabeta_heuristic_3) :-
 :- end_tests(alphabeta_heuristic).
 
 % Affiche la position jouée et celle désirée avec leur score respectif:
-show_heuristic_values(Board, Player, MoveDone, IdealMove, IdealMoveScore) :-
-	make_a_move(Board, Player, MoveDone, MoveDoneBoard),
-	heuristic_score(MoveDoneBoard, MoveDoneScore),
+show_heuristic_values(Board-_-_, MoveDoneBoard-Player-MoveDone, IdealMove, IdealMoveScore) :-
+	heuristic_score(MoveDoneBoard-Player-_, MoveDoneScore),
 	make_a_move(Board, Player, IdealMove, IdealMoveBoard),
-	heuristic_score(IdealMoveBoard, IdealMoveScore),
+	heuristic_score(IdealMoveBoard-Player-_, IdealMoveScore),
 	coordinates_to_id(MoveDone, MD_ID),
 	format('~nPosition jouée:  ~w;  Valeur heuristique: ~w~n', [MD_ID, MoveDoneScore]),
 	display_gomoku_board(MoveDoneBoard),

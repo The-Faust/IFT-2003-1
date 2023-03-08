@@ -10,9 +10,9 @@
 %   IFT-2003 - Intelligence artificielle I
 %   Hiver 2023
 
-%===========================================%
-%               Gomoku Board.               %
-%===========================================%
+%====================================================%
+%                    Gomoku Board.                   %
+%====================================================%
 
 
 :- use_module(library(clpfd)). % Pour 'transpose'.
@@ -108,40 +108,6 @@ get_a_random_move(Board, Row-Col) :-
 make_a_move(Board, Player, Move, NewBoard) :-
     set_cell_content(Board, Move, Player, NewBoard).
 
-% Effectue une rotation de 90º du plateau:
-rotate_board(Board, RotatedBoard) :-
-    transpose(Board, TransposedBoard),
-    maplist(reverse, TransposedBoard, RotatedBoard).
-
-% Effectue une réflexion selon l'axe horizontal du plateau:
-flip_horizontal(Board, FlippedBoard) :-
-    reverse(Board, FlippedBoard).
-
-% Effectue une réflexion selon l'axe vertical du plateau:
-flip_vertical(Board, FlippedBoard) :-
-    maplist(reverse, Board, FlippedBoard).
-
-% Effectue une réflexion selon la première diagonale du plateau:
-flip_first_diagonal(Board, FlippedBoard) :-
-    transpose(Board, FlippedBoard).
-
-% Effectue une réflexion selon la seconde diagonale du plateau:
-flip_second_diagonal(Board, FlippedBoard) :-
-    reverse(Board, ReversedBoard),
-    transpose(ReversedBoard, TransposedBoard),
-    reverse(TransposedBoard, FlippedBoard).
-
-% Permet d'inverser le plateau de jeu (b <-> n):
-invert_board(Board, InvertedBoard) :-
-    maplist(invert_row, Board, InvertedBoard).
-
-invert_row(Row, InvertedRow) :-
-    maplist(invert_value, Row, InvertedRow).
-    
-invert_value(b, n).
-invert_value(n, b).
-invert_value(X, X) :- dif(X, b), dif(X, n).
-
 % Extrait les lignes horizontales:
 get_horizontal_lines(Board, HorizontalLines) :-
     Board = HorizontalLines.
@@ -149,7 +115,41 @@ get_horizontal_lines(Board, HorizontalLines) :-
 % Extrait les lignes verticales:
 get_vertical_lines(Board, VerticalLines) :-
     transpose(Board, VerticalLines).
-    
+
+% Extrait les lignes diagonales descendantes:
+get_diagonal_lines_down(Board, DiagonalLinesDown) :-
+    get_last_index(Board, LastIndex),
+    findall(Line, (
+              between(0, LastIndex, R),
+              between(0, LastIndex, C),
+              (
+                (R = 0 ; C = 0) ->
+                true
+                ;
+                (R = 0)
+                ;
+                (C = 0)
+              ),
+              get_line(Board, R-C, 1-1, [], Line)
+            ), DiagonalLinesDown).
+
+% Extrait les lignes diagonales montantes:
+get_diagonal_lines_up(Board, DiagonalLinesUp) :-
+    get_last_index(Board, LastIndex),
+    findall(Line, (
+              between(0, LastIndex, R),
+              between(0, LastIndex, C),
+              (
+                (R = LastIndex ; C = 0) ->
+                true
+                ;
+                (R = LastIndex)
+                ;
+                (C = 0)
+              ),
+              get_line(Board, R-C, -1-1, [], Line)
+            ), DiagonalLinesUp).
+
 % Extrait une ligne dans une direction donnée à partir d'une case:
 get_line(Board, R-C, StepR-StepC, Accumulator, Line) :-
     get_cell_content(Board, R-C, Content), !,
@@ -159,103 +159,45 @@ get_line(Board, R-C, StepR-StepC, Accumulator, Line) :-
     get_line(Board, NewR-NewC, StepR-StepC, NewAccumulator, Line).
 get_line(_, _, _, Line, Line).
 
+% Extrait toutes les lignes et filtre celles qui sont vides ou moin longue que le but:
+get_all_lines(Board, Lines) :-
+    get_horizontal_lines(Board, HorizontalLines),
+    filter_and_pad_lines(HorizontalLines, HorizontalLinesP),
+    get_vertical_lines(Board, VerticalLines),
+    filter_and_pad_lines(VerticalLines, VerticalLinesP),
+    get_diagonal_lines_up(Board, DiagonalLinesUp),
+    filter_and_pad_lines(DiagonalLinesUp, DiagonalLinesUpP),
+    get_diagonal_lines_down(Board, DiagonalLinesDown),
+    filter_and_pad_lines(DiagonalLinesDown, DiagonalLinesDownP),
+    flatten([HorizontalLinesP, VerticalLinesP, DiagonalLinesUpP, DiagonalLinesDownP], Lines).
+
+% Vérifie si la ligne vaut la peine d'être traitée:
+line_is_worth_treating(Line) :-
+    get_goal(Goal),
+    not(contains_only_empty_cells(Line)),
+    length(Line, Length),
+    Length >= Goal.
+
+% Ajoute des délimiteurs, x, à une ligne:
+pad_line(Line, PaddedLine) :-
+    flatten([x, Line, x], PaddedLine).
+
+% Filtre les lignes sans intérêt et ajoute des délimiteurs:
+filter_and_pad_lines(Lines, TreatedLines) :-
+    include(line_is_worth_treating, Lines, FilteredLines),
+    concurrent_maplist(pad_line, FilteredLines, TreatedLines).
+
 % Créer une liste avec logueur spécifiée et une valeur par défaut:
 create_list(Length, DefaultValue, List) :-
     length(List, Length),
     maplist(=(DefaultValue), List), !.
 
-% Permet d'extraire une sous-liste à l'aide d'un index:
-sublist(List, From, Count, SubList) :-
-    To is From + Count - 1,
-    findall(E, (between(From, To, I), nth0(I, List, E)), SubList).
-
-% Permet de vérifier si une liste est contenue dans l'autre:
-is_a_sublist(SubList, List) :-
-    phrase((..., SubList), List, _), !.
-
-% Permet de vérifier si une liste est contenue dans l'autre et d'obtenir son index:
-is_a_sublist_index(SubList, List, Index) :-
-    phrase((..., SubList), List, Before),
-    length(Before, Index), !.
-
-% Défini "n'importe quelle séquence" avec les points de suspension:
-... --> [] | [_], ... .
-
-% Défini une séquence du symbole S:
-rep(S) --> [S] | [S], rep(S).
-
-% Défini une séquence du symbole S et de longueur L:
-rep(S, L) --> [], {L #= 0} | [S], {L #= 1} | [S], { L_1 #= L - 1 }, rep(S, L_1), !.
-
-% Défini une séquence du symbole S ouverte (v des deux côtés):
-open_rep(S) --> ..., [v], rep(S), [v], !, ... .
-
-% Défini une séquence du symbole S ouverte (v des deux côtés) et de longueur L:
-open_rep(S, L) --> ..., [v], rep(S, L), [v], !, ... .
-
-% Défini une séquence complète:
-full_rep(S, L) --> ..., rep(S, L), !, ... .
-
-% Défini une séquence du symbole S fermée (v d'un seul côté):
-closed_rep(S) --> { dif(S, P), dif(P, v) }, ..., [P], rep(S), [v], !, ... |
-                  { dif(S, P), dif(P, v) }, ..., [v], rep(S), [P], !, ... |
-                  rep(S), [v], !, ... | ..., [v], rep(S).
-
-% Défini une séquence du symbole S fermée (v d'un seul côté) et de longueur L:
-closed_rep(S, L) --> { dif(S, P), dif(P, v) }, ..., [P], rep(S, L), [v], !, ... |
-                     { dif(S, P), dif(P, v) }, ..., [v], rep(S, L), [P], !, ... |
-                     rep(S, L), [v], !, ... | ..., [v], rep(S, L).
-
-% Défini une séquence du symbole S ouverte (v des deux côtés):
-fixed_open_rep(S, T) --> { between(1, T, A), Temp #= T - A, between(1, Temp, B), C #= Temp - B, C >= 1 },
-                         ..., rep(v, A), rep(S, B), rep(v, C), !, ... .
-
-% Défini une séquence du symbole S ouverte (v des deux côtés):
-fixed_open_rep(S, L, T) --> { Temp #= T - L, between(1, Temp, A), B #= T - A - L, B >= 1 },
-                             ..., rep(v, A), rep(S, L), rep(v, B), !, ... .
-
-fixed_alt(S, L, a3) --> { L_1 #= L - 1, between(1, L_1, A), B #= L - A }, ..., [v], rep(S, A), [v], rep(S, B), [v], !, ... .
-fixed_alt(S, L, a2) --> { L_1 #= L - 1, between(1, L_1, A), B #= L - A }, ..., [v], rep(S, A), [v], rep(S, B), !, ... |
-                       { L_1 #= L - 1, between(1, L_1, A), B #= L - A }, ..., rep(S, A), [v], rep(S, B), [v], !, ... .
-fixed_alt(S, L, a1) --> { L_1 #= L - 1, between(1, L_1, A), B #= L - A }, ..., rep(S, A), [v], rep(S, B), !, ... .
-
-% Défini une séquence du symbole S fermée (v d'un seul côté):
-fixed_closed_rep(S, T) --> { dif(S, P), dif(P, v), between(1, T, A), B is T - A }, ..., [P], rep(S, A), rep(v, B), !, ... |
-                           { dif(S, P), dif(P, v), between(1, T, A), B is T - A }, ..., rep(v, A), rep(S, B), [P], !, ... |
-                           { between(1, T, A), B is T - A }, rep(S, A), rep(v, B), !, ... |
-                           { between(1, T, A), B is T - A }, ..., rep(v, A), rep(S, B).
-
-% Défini une séquence du symbole S fermée (v d'un seul côté):
-fixed_closed_rep(S, L, T) --> { dif(S, P), dif(P, v), A is T - L }, ..., [P], rep(S, L), rep(v, A), !, ... |
-                              { dif(S, P), dif(P, v), A is T - L }, ..., rep(v, A), rep(S, L), [P], !, ... |
-                              { A is T - L }, rep(S, L), rep(v, A), !, ... |
-                              { A is T - L }, ..., rep(v, A), rep(S, L).
-
-% Permet de compter le nombre d'occurences d'une sous-liste:
-occurrences(List, Sublist, Count) :-
-    phrase(occurrences(Sublist, 0, Count), List).
-    
-occurrences("", _, _) --> !, { false }.
-
-occurrences(Sublist, Count0, Count) -->
-    Sublist, !, { Count1 is Count0 + 1 },
-    occurrences(Sublist, Count1, Count).
-    
-occurrences(Sublist, Count0, Count) -->
-    [_], !,
-    occurrences(Sublist, Count0, Count).
-    
-occurrences(_, Count, Count) --> !.
-
 % Permet de créer l'empreinte d'une configuration du plateau:
 hash_function(Board, Hash) :-
-  flatten(Board, GridString),
-  hash_function(GridString, 0, Hash).
-  
+    flatten(Board, GridString),
+    hash_function(GridString, 0, Hash).
 hash_function([], Hash, Hash).
-
 hash_function([C|Cs], Acc, Hash) :-
-  cell_to_num(C, Code),
-  NewAcc is ((Acc << 2) - Acc) + Code,
-  hash_function(Cs, NewAcc, Hash).
-  
+    cell_to_num(C, Code),
+    NewAcc is ((Acc << 2) - Acc) + Code,
+    hash_function(Cs, NewAcc, Hash).

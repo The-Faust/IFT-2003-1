@@ -10,13 +10,13 @@
 %   IFT-2003 - Intelligence artificielle I
 %   Hiver 2023
 
-%===========================================%
-%                 Interface.                %
-%===========================================%
+%====================================================%
+%                     Interface.                     %
+%====================================================%
 
 
 :- [board].
-:- [static_evaluation].
+:- [heuristic_evaluation].
 
 % Identifiants du joueur:
 players_name(n, 'noir').    % Joueur noir (n).
@@ -79,9 +79,9 @@ request_goal(N, Goal) :-
 
 % Demande au joueur la couleur qu'il veut jouer:
 request_players_color :-
-	writeln('Quelle couleur voulez-vous jouer? (n: noir ●, b: blanc ◯)'),
 	writeln('Le pion noir débute la partie.'),
-	writeln('Appuyer sur la touche Entrée pour un duel IA vs IA.'),
+	writeln('Quelle couleur voulez-vous jouer? (n: noir ●, b: blanc ◯)'),
+	writeln('(Appuyez sur la touche Entrée pour un duel IA vs IA.)'),
 	repeat,
 	read_line_to_string(user_input, Input),
 	(
@@ -95,7 +95,7 @@ request_players_color :-
 			assertz(player(Color)),
 			true
 			;
-			write('Vous devez choisir une couleur entre b et n.\n'),
+			writeln('Vous devez choisir une couleur entre b et n.'),
 			fail
 		)
 	).
@@ -116,7 +116,7 @@ request_valid_integer(Min, Max, Prompt, Value) :-
 
 % Demande à l'utilisateur de choisir une case du plateau:
 request_cell_coordinates(Board, Row-Col) :-
-	write('Choisissez la case où vous voulez jouer: (ex. A1)\n'),
+	writeln('Choisissez la case où vous voulez jouer: (ex. A1)'),
 	repeat,
 	read_line_to_string(user_input, Input),
 	(
@@ -130,7 +130,7 @@ request_cell_coordinates(Board, Row-Col) :-
 			are_valid_coordinates(Board, Row-Col) ->
 			true
 			;
-			write('Vous devez choisir une case valide!\n'),
+			writeln('Vous devez choisir une case valide!'),
 			fail
 		)
 	).
@@ -143,44 +143,125 @@ request_next_move(Board, Move) :-
 		cell_is_empty(Board, Move) ->
 		true
 		;
-		write('Vous devez choisir une case qui est vide!\n'),
+		writeln('Vous devez choisir une case qui est vide!'),
 		fail
 	).
 
 % Affiche une ligne de séparation:
 draw_line :-
-	write('────────────────────────────────────────────────────────────────────\n').
+	writeln('─────────────────────────────────────────────────────────────────────').
+
+% Efface le contenu de l'écran (clear screen):
+cls :- write('\33\[2J').
 
 % Affiche à qui le tour appartient:
 introduce_turn(Player) :-
 	draw_line,
 	players_name(Player, PlayersName),
 	cell_to_char(Player, PlayersSymbol),
-	format('Le joueur ~w (~w) joue son tour:\n', [PlayersName, PlayersSymbol]).
+	format('Le joueur ~w (~w) joue son tour:\n\n', [PlayersName, PlayersSymbol]).
 
 % Affiche le résultat du tour qui termine:
-conclude_turn(Board, Player, NextPlayer) :-
-	display_gomoku_board(Board),
-	static_score(Board, Player, Score),
+conclude_turn(NewBoard-Player-Move, NextPlayer) :-
+	other(Player, NextPlayer),
+	display_gomoku_board(NewBoard),
+	static_score(NewBoard, Player, StaticScore),
+	heuristic_score(NewBoard-Player-_, HeuristicScore),
 	players_name(Player, PlayersName),
 	cell_to_char(Player, PlayersSymbol),
-	format('Score du joueur ~w (~w): ~d\n', [PlayersName, PlayersSymbol, Score]),
+	coordinates_to_id(Move, MoveID),
+	format('Le joueur ~w (~w) a joué la position ~w.\n\n', [PlayersName, PlayersSymbol, MoveID]),
+	format('Score statique du joueur: ~d\n', [StaticScore]),
+	format('Score heuristique du joueur: ~d\n\n', [HeuristicScore]),
 	(
 		get_goal(Goal),
-		Score >= Goal ->
+		StaticScore >= Goal ->
 		(
 			draw_line,
-			format('Le joueur ~w (~w) gagne!\n', [PlayersName, PlayersSymbol]),
+			writeln('\n                  ╔════════════════════════════╗'),
+			format('                  ║ Le joueur ~w (~w) gagne! ~47|║\n', [PlayersName, PlayersSymbol]),
+			writeln('                  ╚════════════════════════════╝\n'),
+			draw_line,
 			end_game
 		)
 		;
 		true
-	),
-	other(Player, NextPlayer).
+	).
+
+% Demande si le joueur veut jouer une autre partie:
+request_continue_playing :-
+	writeln('Voulez-vous retourner au menu principal?'),
+	repeat,
+	read_line_to_string(user_input, Input),
+	(
+		string_upper(Input, Input_Upper),
+		string_chars(Input_Upper, [FirstLetter|_]),
+		(
+			(
+				member(FirstLetter, ['O', 'Y', 'N', 'Q']) ->
+				(
+					member(FirstLetter, ['O', 'Y']) ->
+					welcome_screen
+					;
+					halt
+				)
+				;
+				(
+					writeln('Vous devez choisir une réponse valide!'),
+					fail
+				)
+			)
+		)
+	).
 
 % Informe l'utilisateur qu'on a obtenu un impasse:
 display_tie :-
-	write('Le plateau de jeu est plein!\n'),
-	write('Il s\'agit d\'un impasse!\n'),
+	draw_line,
+	writeln('\n                  ╔══════════════════════════════╗'),
+	writeln('                  ║ Le plateau de jeu est plein! ║'),
+	writeln('                  ║ Il s\'agit d\'un impasse!      ║'),
+	writeln('                  ╚══════════════════════════════╝\n'),
+	draw_line,
 	end_game.
-	
+
+% Permet d'imiter le switch case:
+switch(X, [Val:Goal|Cases]) :-
+	( X=Val ->
+		call(Goal)
+	;
+		switch(X, Cases)
+	).
+
+% Affiche le message de bienvenu et presente des options:
+welcome_screen :-
+	cls,
+	draw_line,
+	writeln('        ██████   ██████  ███    ███  ██████  ██   ██ ██    ██'),
+	writeln('       ██       ██    ██ ████  ████ ██    ██ ██  ██  ██    ██'),
+	writeln('       ██   ███ ██    ██ ██ ████ ██ ██    ██ █████   ██    ██'),
+	writeln('       ██    ██ ██    ██ ██  ██  ██ ██    ██ ██  ██  ██    ██'),
+	writeln('        ██████   ██████  ██      ██  ██████  ██   ██  ██████ '),
+	draw_line,
+	writeln('\n Bienvenu dans Gomoku!\n'),
+	writeln(' Gomoku est un jeu de stratégie pour deux joueurs.\n'),
+	writeln(' Le but du jeu est de placer cinq pions consécutifs en ligne,'),
+	writeln(' horizontalement, verticalement ou en diagonale, sur le grillage.\n'),
+	writeln(' Chaque joueur place à tour de rôle un pion sur le plateau.'),
+	writeln(' Le premier joueur à atteindre 5 pions consécutifs gagne la partie.\n'),
+	draw_line,
+	writeln(' Voici les options disponibles:\n'),
+	writeln('  1 - Jouer à Gomoku sur un plateau 11×11.'),
+	writeln('  2 - Jouer à Gomoku sur un plateau 15×15.'),
+	writeln('  3 - Jouer à Gomoku sur un plateau 19×19.'),
+	writeln('  4 - Jouer à une version complètement paramétrable de Gomoku.'),
+	writeln('  5 - Jouer à Tic-Tac-Toe (Bonus).'),
+	writeln('  6 - Quitter.'),
+	request_valid_integer(1, 6, '\nEntrez le numéro de l\'option choisie:', Selection),
+	switch(Selection, [
+		1 : gomoku(11),
+		2 : gomoku(15),
+		3 : gomoku(19),
+		4 : play,
+		5 : tictactoe,
+		6 : (cls, halt)
+	]).

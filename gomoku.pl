@@ -10,17 +10,7 @@
 %   IFT-2003 - Intelligence artificielle I
 %   Hiver 2023
 
-%===========================================%
-%  Options:                                 %
-%  -Initialiser le jeu:  ?- gomoku.         %
-%  -Avec paramétrage:    ?- play.           %
-%  -Tic-Tac-Toe (bonus): ?- tictactoe.      %
-%                                           %
-%  Pour une partie AI vs AI:                %
-%  - Gomoku:             ?- gomoku_auto.    %
-%  - Tic-Tac-Toe:        ?- tictactoe_auto. %
-%===========================================%
-
+:- set_prolog_flag(verbose, silent).
 
 % Chargement des modules:
 :- [board].
@@ -39,14 +29,9 @@ play :-
 	turn(Board, Firstplayer, _).
 
 % Démarre le jeu selon les paramètres typiques:
-gomoku :-
+gomoku(Size) :-
 	request_players_color,
-	begin_game(Firstplayer, 5, 19, Board),
-	turn(Board, Firstplayer, _).
-
-% Partie de Gomoku AI vs AI:
-gomoku_auto :-
-	begin_game(Firstplayer, 5, 19, Board),
+	begin_game(Firstplayer, 5, Size, Board),
 	turn(Board, Firstplayer, _).
 
 % Implémentation de Tic-Tac-Toe (bonus):
@@ -55,23 +40,19 @@ tictactoe :-
 	begin_game(Firstplayer, 3, 3, Board),
 	turn(Board, Firstplayer, _).
 
-% Partie de Tic-Tac-Toe AI vs AI (bonus):
-tictactoe_auto :-
-	begin_game(Firstplayer, 3, 3, Board),
-	turn(Board, Firstplayer, _).
-
 % Établi la routine de début de partie:
 begin_game(Firstplayer, Goal, BoardSize, Board) :-
 	set_goal(Goal),
 	create_gomoku_board(BoardSize, Board),
-	display_gomoku_board(Board),
-	Firstplayer = n.
-	%load_cache.
+	Firstplayer = n,
+	load_cache,
+	cls,
+	display_gomoku_board(Board).
 
 % Établi la routine de fin de partie:
 end_game :-
-	%save_cache,
-	break.
+	save_cache,
+	request_continue_playing.
 
 % Établi un tour complet et boucle jusqu'à ce que le jeu termine:
 turn(Board, Player, NewBoard) :-
@@ -99,7 +80,7 @@ turn(Board, Player, NewBoard) :-
 		display_tie
 	),
 	% Conclu le tour:
-	conclude_turn(NewBoard, Player, NextPlayer),
+	conclude_turn(NewBoard-Player-Move, NextPlayer),
 	% Affiche les statistiques (temps écoulé):
 	statistics(runtime, [End|_]),
 	Time is (End - Start)/1000,
@@ -110,18 +91,17 @@ turn(Board, Player, NewBoard) :-
 % Permet de sauvegarder les calculs effectués:
 save_cache :-
 	tell('evaluations.cache'),
-	listing([memo_static_score, memo_heuristic_score]),
+	listing([memo_heuristic_score]),
 	told.
 
 % Permet de charger les calculs effectués:
 load_cache :-
+	exists_file('evaluations.cache') ->
 	(
-		exists_file('evaluations.cache') ->
-		(
-			retractall(memo_static_score(_)),
-			retractall(memo_heuristic_score(_)),
-			consult('evaluations.cache')
-		)
-		;
-		true
-	).
+		retractall(memo_heuristic_score(_)),
+		consult('evaluations.cache')
+	)
+	;
+	true.
+
+:- initialization welcome_screen.
