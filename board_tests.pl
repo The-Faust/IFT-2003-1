@@ -36,6 +36,23 @@ test(hashing_function_10x10) :-
 test(hashing_function_15x15) :-
     generate_boards(10, 10, 1000, Boards),
     assertion(check_collisions(Boards)).
+
+test(get_possible_moves) :-
+    Board = [[v,v,v,v,v],[v,v,v,v,v],[v,v,v,v,v],[v,v,v,v,v],[v,v,v,v,v]],
+    time(get_possible_moves(Board, Moves)),
+    length(Moves, Length),
+    assertion(Length =:= 25),
+    time(get_possible_moves(Board, Moves)).
+
+test(has_an_empty_cell_true) :-
+    Board = [[v,v,v,v,v],[v,v,v,v,v],[v,v,v,v,v],[v,v,v,v,v],[v,v,v,v,v]],
+    time(assertion(has_an_empty_cell(Board))),
+    time(assertion(cell_is_empty(Board, _))).
+
+test(has_an_empty_cell_false) :-
+    Board = [[b,b,b,b,b],[b,b,b,b,b],[b,b,b,b,b],[b,b,b,b,b],[b,b,b,b,b]],
+    time(assertion(not(has_an_empty_cell(Board)))),
+    time(assertion(not(cell_is_empty(Board, _)))).
   
 :- end_tests(board).
 

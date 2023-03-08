@@ -17,6 +17,8 @@
 
 :- use_module(library(clpfd)). % Pour 'transpose'.
 
+:- dynamic memo_possible_moves/2.	% Mémoïsation des actions possibles pour une configuration.
+
 % Prédicat qui permet d'alterner les joeurs:
 other(b, n).
 other(n, b).
@@ -53,27 +55,11 @@ replace(List, Index, NewElem, NewList) :-
 
 % Vérifie si la case est vide:
 cell_is_empty(Board, Row-Col) :-
-    get_cell_content(Board, Row-Col, Content),
-    Content == v.
-
-% Compte le nombre de cases respectant un prédicat donné:
-count_cells(Board, Predicate, Count) :-
-    flatten(Board, Flat),
-    include(Predicate, Flat, FilteredCells),
-    length(FilteredCells, Count).
-
-% Compte le nombre de cases vides:
-count_empty_cells(Board, Count) :-
-    count_cells(Board, [C]>>(C = v), Count).
-
-% Compte le nombre de cases occupées:
-count_occupied_cells(Board, Count) :-
-    count_cells(Board, [C]>>(not(C = v)), Count).
+    get_cell_content(Board, Row-Col, v).
 
 % Vérifie s'il reste un emplacement non occupé:
 has_an_empty_cell(Board) :-
-    flatten(Board, Flat),
-    memberchk(v, Flat).
+    cell_is_empty(Board, _).
 
 % Vérifie si toutes les cases d'une liste sont vides (contient v):
 contains_only_empty_cells(List) :-
@@ -81,9 +67,7 @@ contains_only_empty_cells(List) :-
 
 % Vérifie si les coordonnées existent sur le plateau:
 are_valid_coordinates(Board, Row-Col) :-
-    get_last_index(Board, LastIndex),
-    between(0, LastIndex, Col),
-    between(0, LastIndex, Row).
+    get_cell_content(Board, Row-Col, _).
 
 % Retourne le dernier index du plateau (débute à 0):
 get_last_index(Board, LastIndex) :-
@@ -92,7 +76,10 @@ get_last_index(Board, LastIndex) :-
     
 % Permet d'établir les cases où il est possible de jouer:
 get_possible_moves(Board, Moves) :-
-    findall(Move, cell_is_empty(Board, Move), Moves).
+    memo_possible_moves(Board, Moves), !.
+get_possible_moves(Board, Moves) :-
+    findall(Move, cell_is_empty(Board, Move), Moves),
+    assertz(memo_possible_moves(Board, Moves)), !.
     
 % Permet d'obtenir une case vide au hasard:
 get_a_random_move(Board, Row-Col) :-
@@ -120,41 +107,48 @@ get_vertical_lines(Board, VerticalLines) :-
 get_diagonal_lines_down(Board, DiagonalLinesDown) :-
     get_goal(Goal),
     get_last_index(Board, LastIndex),
-    Goal_1 is Goal - 1,
-    LastUsefulIndex is LastIndex - Goal_1,
     findall(Line, (
-              between(0, LastUsefulIndex, R),
-              between(0, LastUsefulIndex, C),
-              (
-                (R = 0 ; C = 0) ->
-                true
-                ;
-                (R = 0)
-                ;
-                (C = 0)
-              ),
-              get_line(Board, R-C, 1-1, [], Line)
+              start_of_a_diagonal_lines_down(Row-Col, Goal, LastIndex),
+              get_line(Board, Row-Col, 1-1, [], Line)
             ), DiagonalLinesDown).
 
 % Extrait les lignes diagonales montantes:
 get_diagonal_lines_up(Board, DiagonalLinesUp) :-
     get_goal(Goal),
     get_last_index(Board, LastIndex),
+    findall(Line, (
+              start_of_a_diagonal_lines_up(Row-Col, Goal, LastIndex),
+              get_line(Board, Row-Col, -1-1, [], Line)
+            ), DiagonalLinesUp).
+
+% Identifie le début d'une diagonale descendante:
+start_of_a_diagonal_lines_down(Row-Col, Goal, LastIndex) :-
+    LastUsefulIndex is LastIndex - Goal + 1,
+    between(0, LastUsefulIndex, Row),
+    between(0, LastUsefulIndex, Col),
+    (
+      (Row = 0 ; Col = 0) ->
+      true
+      ;
+      (Row = 0)
+      ;
+      (Col = 0)
+    ).
+
+% Identifie le début d'une diagonale montante:
+start_of_a_diagonal_lines_up(Row-Col, Goal, LastIndex) :-
     Goal_1 is Goal - 1,
     LastUsefulIndex is LastIndex - Goal_1,
-    findall(Line, (
-              between(Goal_1, LastIndex, R),
-              between(0, LastUsefulIndex, C),
-              (
-                (R = LastIndex ; C = 0) ->
-                true
-                ;
-                (R = LastIndex)
-                ;
-                (C = 0)
-              ),
-              get_line(Board, R-C, -1-1, [], Line)
-            ), DiagonalLinesUp).
+    between(Goal_1, LastIndex, Row),
+    between(0, LastUsefulIndex, Col),
+    (
+      (Row = LastIndex ; Col = 0) ->
+      true
+      ;
+      (Row = LastIndex)
+      ;
+      (Col = 0)
+    ).
 
 % Extrait une ligne dans une direction donnée à partir d'une case:
 get_line(Board, R-C, StepR-StepC, Accumulator, Line) :-
@@ -204,4 +198,3 @@ hash_function([C|Cs], Acc, Hash) :-
     cell_to_num(C, Code),
     NewAcc is ((Acc << 2) - Acc) + Code,
     hash_function(Cs, NewAcc, Hash).
-    

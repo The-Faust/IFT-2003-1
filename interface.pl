@@ -41,7 +41,7 @@ coordinates_to_id(R-C, ID) :-
 % Affiche le plateau de jeu:
 display_gomoku_board(Board) :-
 	get_last_index(Board, LastIndex),
-	Alignement is (46 - LastIndex) // 2,
+	Alignement is 30 - LastIndex,
 	format('~*|   ', [Alignement]),
 	forall(   % Itère sur le nom des colonnes.
 		between(0, LastIndex, C),
@@ -82,9 +82,8 @@ request_goal(N, Goal) :-
 
 % Demande au joueur la couleur qu'il veut jouer:
 request_players_color :-
-	writeln('Le pion noir débute la partie.'),
-	writeln('Quelle couleur voulez-vous jouer? (n: noir ●, b: blanc ◯)'),
-	writeln('(Appuyez sur la touche Entrée pour un duel IA vs IA.)'),
+	writeln('Quelle couleur voulez-vous jouer? Appuyez Entrée pour un duel IA vs IA.'),
+	writeln('[n: noir ●, b: blanc ◯, ⏎: IA vs IA]'),
 	repeat,
 	read_line_to_string(user_input, Input),
 	(
@@ -255,6 +254,7 @@ welcome_screen :-
 	writeln(' Le but du jeu est de placer cinq pions consécutifs en ligne,'),
 	writeln(' horizontalement, verticalement ou en diagonale, sur le grillage.\n'),
 	writeln(' Chaque joueur place à tour de rôle un pion sur le plateau.'),
+	writeln(' Le joueur ayant les pions noirs débute la partie.'),
 	writeln(' Le premier joueur à atteindre 5 pions consécutifs gagne la partie.\n'),
 	writeln(' ╔══════════════════════════════════════════════════════════════════╗'),
 	writeln(' ║ Voici les options disponibles:                                   ║'),
