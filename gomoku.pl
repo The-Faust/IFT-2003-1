@@ -45,13 +45,12 @@ begin_game(Firstplayer, Goal, BoardSize, Board) :-
 	set_goal(Goal),
 	create_gomoku_board(BoardSize, Board),
 	Firstplayer = n,
-	%load_cache,
 	cls,
 	display_gomoku_board(Board).
 
 % Établi la routine de fin de partie:
 end_game :-
-	%save_cache,
+	retractall(goal(_)),
 	request_continue_playing.
 
 % Établi un tour complet et boucle jusqu'à ce que le jeu termine:
@@ -81,21 +80,5 @@ turn(Board, Player, NewBoard) :-
 	conclude_turn(NewBoard-Player-Move, NextPlayer, StartTime),
 	% Récursion jusqu'à l'atteinte d'un état final:
 	turn(NewBoard, NextPlayer, _).
-
-% Permet de sauvegarder les calculs effectués:
-save_cache :-
-	tell('evaluations.cache'),
-	listing([memo_heuristic_score]),
-	told.
-
-% Permet de charger les calculs effectués:
-load_cache :-
-	exists_file('evaluations.cache') ->
-	(
-		retractall(memo_heuristic_score(_)),
-		consult('evaluations.cache')
-	)
-	;
-	true.
 
 :- initialization welcome_screen.

@@ -15,18 +15,9 @@
 %====================================================%
 
 
-:- use_module(library(clpfd)). % Pour 'transpose'.
-
-:- dynamic memo_possible_moves/2.	% Mémoïsation des actions possibles pour une configuration.
-
 % Prédicat qui permet d'alterner les joeurs:
 other(b, n).
 other(n, b).
-
-% Valeur numérique du contenu d'une case:
-cell_to_num(v, 1).   	% Case vide (v).
-cell_to_num(n, 2).   	% Case avec un pion noir (n).
-cell_to_num(b, 3).   	% Case avec un pion blanc (b).
 
 % Créer un plateau de jeu vierge de dimensions N×N:
 create_gomoku_board(N, Board) :-
@@ -35,7 +26,8 @@ create_gomoku_board(N, Board) :-
 
 % Créer une rangée du plateau de jeu de dimensions N:
 create_row(N, Row) :-
-    create_list(N, v, Row).
+    length(Row, N),
+    maplist(=(v), Row), !.
 
 % Extrait le contenu d'une case du plateau:
 get_cell_content(Board, Row-Col, Content) :-
@@ -76,53 +68,14 @@ get_last_index(Board, LastIndex) :-
     
 % Permet d'établir les cases où il est possible de jouer:
 get_possible_moves(Board, Moves) :-
-    memo_possible_moves(Board, Moves), !.
-get_possible_moves(Board, Moves) :-
-    findall(Move, cell_is_empty(Board, Move), Moves),
-    assertz(memo_possible_moves(Board, Moves)), !.
-    
-% Permet d'obtenir une case vide au hasard:
-get_a_random_move(Board, Row-Col) :-
-    get_last_index(Board, LastIndex),
-    repeat,
-    (
-        random_between(0, LastIndex, Row),
-        random_between(0, LastIndex, Col),
-        cell_is_empty(Board, Row-Col)
-    ).
+    findall(Move, cell_is_empty(Board, Move), Moves).
 
 % Permet d'effectuer un mouvement:
 make_a_move(Board, Player, Move, NewBoard) :-
     set_cell_content(Board, Move, Player, NewBoard).
-
-% Extrait les lignes horizontales:
-get_horizontal_lines(Board, HorizontalLines) :-
-    Board = HorizontalLines.
-    
-% Extrait les lignes verticales:
-get_vertical_lines(Board, VerticalLines) :-
-    transpose(Board, VerticalLines).
-
-% Extrait les lignes diagonales descendantes:
-get_diagonal_lines_down(Board, DiagonalLinesDown) :-
-    get_goal(Goal),
-    get_last_index(Board, LastIndex),
-    findall(Line, (
-              start_of_a_diagonal_lines_down(Row-Col, Goal, LastIndex),
-              get_line(Board, Row-Col, 1-1, [], Line)
-            ), DiagonalLinesDown).
-
-% Extrait les lignes diagonales montantes:
-get_diagonal_lines_up(Board, DiagonalLinesUp) :-
-    get_goal(Goal),
-    get_last_index(Board, LastIndex),
-    findall(Line, (
-              start_of_a_diagonal_lines_up(Row-Col, Goal, LastIndex),
-              get_line(Board, Row-Col, -1-1, [], Line)
-            ), DiagonalLinesUp).
-
+        
 % Identifie le début d'une diagonale descendante:
-start_of_a_diagonal_lines_down(Row-Col, Goal, LastIndex) :-
+start_of_a_diagonal_line_down(Row-Col, Goal, LastIndex) :-
     LastUsefulIndex is LastIndex - Goal + 1,
     between(0, LastUsefulIndex, Row),
     between(0, LastUsefulIndex, Col),
@@ -136,7 +89,7 @@ start_of_a_diagonal_lines_down(Row-Col, Goal, LastIndex) :-
     ).
 
 % Identifie le début d'une diagonale montante:
-start_of_a_diagonal_lines_up(Row-Col, Goal, LastIndex) :-
+start_of_a_diagonal_line_up(Row-Col, Goal, LastIndex) :-
     Goal_1 is Goal - 1,
     LastUsefulIndex is LastIndex - Goal_1,
     between(Goal_1, LastIndex, Row),
@@ -150,6 +103,25 @@ start_of_a_diagonal_lines_up(Row-Col, Goal, LastIndex) :-
       (Col = 0)
     ).
 
+% Identifie le début d'une ligne:
+start_of_an_horizontal_line(Row-Col, _, LastIndex) :-
+    between(0, LastIndex, Row),
+    Col = 0.
+
+% Identifie le début d'une colonne:
+start_of_a_vertical_line(Row-Col, _, LastIndex) :-
+    between(0, LastIndex, Col),
+    Row = 0.
+
+% Extrait les lignes pour un itérateur d'indices et une direction donnée:
+get_lines(Board, StartingIndices, Direction, [x|Line]) :-
+    get_goal(Goal),
+    get_last_index(Board, LastIndex),
+    findall(Line, (
+              call(StartingIndices, Row-Col, Goal, LastIndex),
+              get_line(Board, Row-Col, Direction, [x], Line)
+            ), Line).
+
 % Extrait une ligne dans une direction donnée à partir d'une case:
 get_line(Board, R-C, StepR-StepC, Accumulator, Line) :-
     get_cell_content(Board, R-C, Content), !,
@@ -161,40 +133,8 @@ get_line(_, _, _, Line, Line).
 
 % Extrait toutes les lignes et filtre celles qui sont vides:
 get_all_lines(Board, Lines) :-
-    get_horizontal_lines(Board, HorizontalLines),
-    filter_and_pad_lines(HorizontalLines, HorizontalLinesP),
-    get_vertical_lines(Board, VerticalLines),
-    filter_and_pad_lines(VerticalLines, VerticalLinesP),
-    get_diagonal_lines_up(Board, DiagonalLinesUp),
-    filter_and_pad_lines(DiagonalLinesUp, DiagonalLinesUpP),
-    get_diagonal_lines_down(Board, DiagonalLinesDown),
-    filter_and_pad_lines(DiagonalLinesDown, DiagonalLinesDownP),
-    flatten([HorizontalLinesP, VerticalLinesP, DiagonalLinesUpP, DiagonalLinesDownP], Lines).
-
-% Ajoute des délimiteurs, x, à une ligne:
-pad_line(Line, PaddedLine) :-
-    flatten([x, Line, x], PaddedLine).
-
-% Vérifie si la ligne vaut la peine d'être traitée:
-line_is_worth_treating(Line) :-
-    not(contains_only_empty_cells(Line)).
-
-% Filtre les lignes sans intérêt et ajoute des délimiteurs:
-filter_and_pad_lines(Lines, TreatedLines) :-
-    include(line_is_worth_treating, Lines, FilteredLines),
-    concurrent_maplist(pad_line, FilteredLines, TreatedLines).
-
-% Créer une liste avec logueur spécifiée et une valeur par défaut:
-create_list(Length, DefaultValue, List) :-
-    length(List, Length),
-    maplist(=(DefaultValue), List), !.
-
-% Permet de créer l'empreinte d'une configuration du plateau:
-hash_function(Board, Hash) :-
-    flatten(Board, GridString),
-    hash_function(GridString, 0, Hash).
-hash_function([], Hash, Hash).
-hash_function([C|Cs], Acc, Hash) :-
-    cell_to_num(C, Code),
-    NewAcc is ((Acc << 2) - Acc) + Code,
-    hash_function(Cs, NewAcc, Hash).
+    get_lines(Board, start_of_a_diagonal_line_down, 1-1, DiagonalLinesDown),
+    get_lines(Board, start_of_a_diagonal_line_up, -1-1, DiagonalLinesUp),
+    get_lines(Board, start_of_an_horizontal_line, 0-1, HorizontalLines),
+    get_lines(Board, start_of_a_vertical_line, 1-0, VerticalLines),
+    flatten([HorizontalLines, VerticalLines, DiagonalLinesUp, DiagonalLinesDown], Lines).

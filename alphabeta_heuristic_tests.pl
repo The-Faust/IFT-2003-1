@@ -44,7 +44,7 @@ test(prevent_open_four) :-
 	get_time(TimeStamp),
 	TimeLimit is 1.5,
 
-	time(alphabeta_heuristic(Pos, Alpha, Beta, GoodPos, Val, Depth, TimeStamp, TimeLimit)),
+	profile(alphabeta_heuristic(Pos, Alpha, Beta, GoodPos, Val, Depth, TimeStamp, TimeLimit)),
 	GoodPos = _-_-MoveDone,
 	
 	IdealMove = 2-6,
@@ -74,7 +74,7 @@ test(prevent_closed_four) :-
 	get_time(TimeStamp),
 	TimeLimit is 1.5,
 
-	time(alphabeta_heuristic(Pos, Alpha, Beta, GoodPos, Val, Depth, TimeStamp, TimeLimit)),
+	profile(alphabeta_heuristic(Pos, Alpha, Beta, GoodPos, Val, Depth, TimeStamp, TimeLimit)),
 	GoodPos = _-_-MoveDone,
 	
 	IdealMove = 9-4,
@@ -104,7 +104,7 @@ test(prevent_semi3_four) :-
 	get_time(TimeStamp),
 	TimeLimit is 1.5,
 
-	time(alphabeta_heuristic(Pos, Alpha, Beta, GoodPos, Val, Depth, TimeStamp, TimeLimit)),
+	profile(alphabeta_heuristic(Pos, Alpha, Beta, GoodPos, Val, Depth, TimeStamp, TimeLimit)),
 	GoodPos = _-_-MoveDone,
 	
 	IdealMove = 9-3,
@@ -134,7 +134,7 @@ test(prevent_semi3_three) :-
 	get_time(TimeStamp),
 	TimeLimit is 1.5,
 	
-	time(alphabeta_heuristic(Pos, Alpha, Beta, GoodPos, Val, Depth, TimeStamp, TimeLimit)),
+	profile(alphabeta_heuristic(Pos, Alpha, Beta, GoodPos, Val, Depth, TimeStamp, TimeLimit)),
 	GoodPos = _-_-MoveDone,
 	
 	IdealMove = 4-3,
@@ -164,7 +164,7 @@ test(win_next_turn) :-
 	get_time(TimeStamp),
 	TimeLimit is 1.5,
 	
-	time(alphabeta_heuristic(Pos, Alpha, Beta, GoodPos, Val, Depth, TimeStamp, TimeLimit)),
+	profile(alphabeta_heuristic(Pos, Alpha, Beta, GoodPos, Val, Depth, TimeStamp, TimeLimit)),
 	GoodPos = _-_-MoveDone,
 	
 	IdealMove = 2-5,

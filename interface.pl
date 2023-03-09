@@ -41,7 +41,7 @@ coordinates_to_id(R-C, ID) :-
 % Affiche le plateau de jeu:
 display_gomoku_board(Board) :-
 	get_last_index(Board, LastIndex),
-	Alignement is 30 - LastIndex,
+	Alignement is 32 - LastIndex,
 	format('~*|   ', [Alignement]),
 	forall(   % Itère sur le nom des colonnes.
 		between(0, LastIndex, C),
@@ -151,7 +151,7 @@ request_next_move(Board, Move) :-
 
 % Affiche une ligne de séparation:
 draw_line :-
-	writeln('─────────────────────────────────────────────────────────────────────').
+	writeln('──────────────────────────────────────────────────────────────────────').
 
 % Efface le contenu de l'écran (clear screen):
 cls :- write('\33\[2J\n').
@@ -175,11 +175,11 @@ conclude_turn(NewBoard-Player-Move, NextPlayer, StartTime) :-
 	coordinates_to_id(Move, MoveID),
 	get_time(EndTime),
 	Time is EndTime - StartTime,
-	writeln('┏━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━┓'),
-	format('┃ Joueur: ~w (~w) ~21|┃ Position jouée: ~w ~43|┃ Durée du tour: ~3fs~68|┃\n', [PlayersName, PlayersSymbol, MoveID, Time]),
-	writeln('┣━━━━━━━━━━━━━━━━━━━━┻━━━━━━━━┳━━━━━━━━━━━━┻━━━━━━━━━━━━━━━━━━━━━━━━┫'),
-	format('┃ Alignement le plus long: ~d ~30|┃ Valeur heuristique de l\'état: ~d ~68|┃\n', [StaticScore, HeuristicScore]),
-	writeln('┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┻━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛'),
+	writeln('┏━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━┓'),
+	format('┃ Joueur: ~w (~w) ~21|┃ Position jouée: ~w ~43|┃ Durée du tour: ~3fs~69|┃\n', [PlayersName, PlayersSymbol, MoveID, Time]),
+	writeln('┣━━━━━━━━━━━━━━━━━━━━┻━━━━━━━━┳━━━━━━━━━━━━┻━━━━━━━━━━━━━━━━━━━━━━━━━┫'),
+	format('┃ Alignement le plus long: ~d ~30|┃ Valeur heuristique de l\'état: ~d ~69|┃\n', [StaticScore, HeuristicScore]),
+	writeln('┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┻━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛'),
 	(
 		get_goal(Goal),
 		StaticScore >= Goal ->
