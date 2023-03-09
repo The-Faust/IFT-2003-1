@@ -14,7 +14,7 @@
 
 % Chargement des modules:
 :- [board].
-:- [interface].
+:- [user_interface].
 :- [agent].
 
 % Paramètres choisis par l'utilisateur:

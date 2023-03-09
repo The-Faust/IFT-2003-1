@@ -18,7 +18,7 @@
 
 
 :- [board].
-:- [interface].
+:- [user_interface].
 :- [agent].
 
 :- begin_tests(alphabeta).

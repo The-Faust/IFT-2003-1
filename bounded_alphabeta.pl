@@ -15,7 +15,7 @@
 %====================================================%
 
 
-:- module(alphabeta_heuristic, [alphabeta_heuristic/8]).
+:- module(bounded_alphabeta, [bounded_alphabeta/8]).
 
 % Modification de l'algorithme Alpha-Bêta tel que suggéré dans le livre
 % intitulé "Prolog programming for artificial intelligence"
@@ -26,7 +26,7 @@
 % et le temps de calcul. Elle utilise un heuristique pour évaluer la 
 % valeur d'un état.
 
-alphabeta_heuristic(Pos, Alpha, Beta, GoodPos, Val, Depth, TimeStamp, TimeLimit) :-
+bounded_alphabeta(Pos, Alpha, Beta, GoodPos, Val, Depth, TimeStamp, TimeLimit) :-
     get_time(Time), Time - TimeStamp < TimeLimit,
     Depth > 0, moves(Pos, PosList), !,
     boundedbest(PosList, Alpha, Beta, GoodPos, Val, Depth, TimeStamp, TimeLimit);
@@ -34,7 +34,7 @@ alphabeta_heuristic(Pos, Alpha, Beta, GoodPos, Val, Depth, TimeStamp, TimeLimit)
 
 boundedbest([Pos|PosList], Alpha, Beta, GoodPos, GoodVal, Depth, TimeStamp, TimeLimit) :-
     Depth1 is Depth - 1,
-    alphabeta_heuristic(Pos, Alpha, Beta, _, Val, Depth1, TimeStamp, TimeLimit),
+    bounded_alphabeta(Pos, Alpha, Beta, _, Val, Depth1, TimeStamp, TimeLimit),
     goodenough(PosList, Alpha, Beta, Pos, Val, GoodPos, GoodVal, Depth, TimeStamp, TimeLimit).
 
 goodenough([], _, _, Pos, Val, Pos, Val, _, _, _) :- !.

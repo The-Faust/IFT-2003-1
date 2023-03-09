@@ -11,12 +11,12 @@
 %   Hiver 2023
 
 %====================================================%
-%                     Interface.                     %
+%               Interface utilisateur.               %
 %====================================================%
 
 
 :- [board].
-:- [heuristic_evaluation].
+:- [bounded_alphabeta].
 
 % Identifiants du joueur:
 players_name(n, 'noir').    % Joueur noir (n).
@@ -108,6 +108,9 @@ request_valid_integer(Min, Max, Prompt, Value) :-
 	repeat,
 	nl,
 	read_line_to_string(user_input, Input),
+	string_upper(Input, Input_Upper),
+	string_chars(Input_Upper, [C|_]),
+	( C = 'Q' -> (cls, halt) ; true),
 	(
 		catch(number_chars(Value, Input), _, false), integer(Value), between(Min, Max, Value) ->
 		true
@@ -177,9 +180,9 @@ conclude_turn(NewBoard-Player-Move, NextPlayer, StartTime) :-
 	Time is EndTime - StartTime,
 	writeln('┏━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━┓'),
 	format('┃ Joueur: ~w (~w) ~21|┃ Position jouée: ~w ~43|┃ Durée du tour: ~3fs~69|┃\n', [PlayersName, PlayersSymbol, MoveID, Time]),
-	writeln('┣━━━━━━━━━━━━━━━━━━━━┻━━━━━━━━┳━━━━━━━━━━━━┻━━━━━━━━━━━━━━━━━━━━━━━━━┫'),
-	format('┃ Alignement le plus long: ~d ~30|┃ Valeur heuristique de l\'état: ~d ~69|┃\n', [StaticScore, HeuristicScore]),
-	writeln('┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┻━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛'),
+	writeln('┣━━━━━━━━━━━━━━━━━━━━┻━━━━━━━━━━┳━━━━━━━━━━┻━━━━━━━━━━━━━━━━━━━━━━━━━┫'),
+	format('┃ Alignement le plus long: ~d ~32|┃ Score heuristique: ~d ~69|┃\n', [StaticScore, HeuristicScore]),
+	writeln('┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┻━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛'),
 	(
 		get_goal(Goal),
 		StaticScore >= Goal ->
@@ -264,7 +267,8 @@ welcome_screen :-
 	writeln(' ║ 3 - Jouer à Gomoku sur un plateau 19×19.                         ║'),
 	writeln(' ║ 4 - Jouer à une version complètement paramétrable de Gomoku.     ║'),
 	writeln(' ║ 5 - Jouer à Tic-Tac-Toe (Bonus).                                 ║'),
-	writeln(' ║ 6 - Quitter.                                                     ║'),
+	writeln(' ║ Q - Quitter.                                                     ║'),
+	writeln(' ║                                                                  ║'),
 	writeln(' ╚══════════════════════════════════════════════════════════════════╝'),
 	request_valid_integer(1, 6, '\nEntrez le numéro de l\'option choisie:', Selection),
 	switch(Selection, [
