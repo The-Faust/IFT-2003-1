@@ -17,7 +17,6 @@
 
 :- [board].
 
-:- dynamic memo_static_score/4.	% Mémoïsation du score pour une configuration.
 :- dynamic goal/1.  			% Nombre de pions à aligner pour gagner.
 
 % Assigne un but (nombre de pions à aligner):
@@ -28,19 +27,11 @@ set_goal(Goal) :-
 get_goal(Goal) :-
 	goal(Goal).
 
-% Récupère l'alignement de jetons le plus long mémoïsé pour un joueur:
-static_score(Board, Player, BestScore) :-
-	member(Player, [n, b]),
-	get_goal(Goal),
-	hash_function(Board, Hash),
-	memo_static_score(Hash, Goal, Player, BestScore),
-	!.
-
 % Évalue le score d'un joueur, soit l'alignement de jetons le plus long:
 static_score(Board, Player, Score) :-
-	member(Player, [n, b]),
 	get_last_index(Board, LastIndex),
 	LastIndex_1 is LastIndex - 1,
+	member(Player, [n, b]),
 	setof(Streak,
 		(R)^(
 			between(0, LastIndex, R),
@@ -83,17 +74,13 @@ static_score(Board, Player, Score) :-
 			check_direction(Board, Player, R-C, -1-1, 0, 0, Streak)
 		),
 		DiagonalUpStreaks),
-	!,
 	flatten([HorizontalStreaks, VerticalStreaks, DiagonalDownStreaks, DiagonalUpStreaks], Streaks),
-	max_list(Streaks, Score),
-	get_goal(Goal),
-	hash_function(Board, Hash),
-	assertz(memo_static_score(Hash, Goal, Player, Score)).
+	max_list(Streaks, Score), !.
 
 % Évalue l'alignement de jetons le plus long dans une direction donnée à partir c'une case:
 check_direction(Board, Player, R-C, StepR-StepC, Streak, PreviousLongestStreak, LongestStreak) :-
 	(
-		get_cell_content(Board, R-C, Content), !,
+		get_cell_content(Board, R-C, Content),
 		(
 			Content = Player ->
 			(
@@ -113,9 +100,10 @@ check_direction(Board, Player, R-C, StepR-StepC, Streak, PreviousLongestStreak, 
 		),
 		NewR is R + StepR,
 		NewC is C + StepC,
+		!,
 		check_direction(Board, Player, NewR-NewC, StepR-StepC, CurrentStreak, NewLongestStreak, LongestStreak)
 	).
-check_direction(_, _, _, _, _, PreviousLongestStreak, PreviousLongestStreak).
+check_direction(_, _, _, _, _, PreviousLongestStreak, PreviousLongestStreak) :- !.
 
 % Vérifie s'il est possible pour le joueur de gagner en un tour:
 winning_move(Board, Player, Move) :-

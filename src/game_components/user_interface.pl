@@ -11,12 +11,12 @@
 %   Hiver 2023
 
 %====================================================%
-%                     Interface.                     %
+%               Interface utilisateur.               %
 %====================================================%
 
 
 :- [board].
-:- [heuristic_evaluation].
+:- [src/algorithms/bounded_alphabeta].
 
 % Identifiants du joueur:
 players_name(n, 'noir').    % Joueur noir (n).
@@ -41,7 +41,8 @@ coordinates_to_id(R-C, ID) :-
 % Affiche le plateau de jeu:
 display_gomoku_board(Board) :-
 	get_last_index(Board, LastIndex),
-	write('   '),
+	Alignement is 32 - LastIndex,
+	format('~*|   ', [Alignement]),
 	forall(   % Itère sur le nom des colonnes.
 		between(0, LastIndex, C),
 		(
@@ -54,7 +55,7 @@ display_gomoku_board(Board) :-
 		nth1(Y, Board, Row),
 		(
 			% Affiche le nom de la ligne:
-			format('~|~t~d~2+ ', [Y]),
+			format('~*|~|~t~d~2+ ', [Alignement, Y]),
 			% Affiche le contenu de la ligne:
 			maplist([C]>>(cell_to_char(C, Char), format('─~w', [Char])), Row),
 			write('─\n')
@@ -71,17 +72,18 @@ set_board_size(N) :-
 request_goal(N, Goal) :-
 	(
 		N > 3 ->
-		format(atom(Prompt), 'Choisissez l\'objectif, soit le nombre de jetons à aligner: (min: 3, max: ~d)', N),
-		request_valid_integer(3, N, Prompt, Goal)
+		(
+			format(atom(Prompt), 'Choisissez l\'objectif, soit le nombre de jetons à aligner: (min: 3, max: ~d)', N),
+			request_valid_integer(3, N, Prompt, Goal)
+		)
 		;
 		Goal is 3
 	).
 
 % Demande au joueur la couleur qu'il veut jouer:
 request_players_color :-
-	writeln('Le pion noir débute la partie.'),
-	writeln('Quelle couleur voulez-vous jouer? (n: noir ●, b: blanc ◯)'),
-	writeln('(Appuyez sur la touche Entrée pour un duel IA vs IA.)'),
+	writeln('Quelle couleur voulez-vous jouer? Appuyez Entrée pour un duel IA vs IA.'),
+	writeln('[n: noir ●, b: blanc ◯, ⏎: IA vs IA]'),
 	repeat,
 	read_line_to_string(user_input, Input),
 	(
@@ -106,6 +108,9 @@ request_valid_integer(Min, Max, Prompt, Value) :-
 	repeat,
 	nl,
 	read_line_to_string(user_input, Input),
+	string_upper(Input, Input_Upper),
+	string_chars(Input_Upper, [C|_]),
+	( C = 'Q' -> (cls, halt) ; true),
 	(
 		catch(number_chars(Value, Input), _, false), integer(Value), between(Min, Max, Value) ->
 		true
@@ -147,20 +152,21 @@ request_next_move(Board, Move) :-
 
 % Affiche une ligne de séparation:
 draw_line :-
-	writeln('─────────────────────────────────────────────────────────────────────').
+	writeln('──────────────────────────────────────────────────────────────────────').
 
 % Efface le contenu de l'écran (clear screen):
-cls :- write('\33\[2J').
+cls :- write('\33\[2J\n').
 
 % Affiche à qui le tour appartient:
-introduce_turn(Player) :-
+introduce_turn(Player, StartTime) :-
 	draw_line,
 	players_name(Player, PlayersName),
 	cell_to_char(Player, PlayersSymbol),
-	format('Le joueur ~w (~w) joue son tour:\n\n', [PlayersName, PlayersSymbol]).
+	format('Le joueur ~w (~w) joue son tour:\n\n', [PlayersName, PlayersSymbol]),
+	get_time(StartTime).
 
 % Affiche le résultat du tour qui termine:
-conclude_turn(NewBoard-Player-Move, NextPlayer) :-
+conclude_turn(NewBoard-Player-Move, NextPlayer, StartTime) :-
 	other(Player, NextPlayer),
 	display_gomoku_board(NewBoard),
 	static_score(NewBoard, Player, StaticScore),
@@ -168,9 +174,13 @@ conclude_turn(NewBoard-Player-Move, NextPlayer) :-
 	players_name(Player, PlayersName),
 	cell_to_char(Player, PlayersSymbol),
 	coordinates_to_id(Move, MoveID),
-	format('Le joueur ~w (~w) a joué la position ~w.\n\n', [PlayersName, PlayersSymbol, MoveID]),
-	format('Score statique du joueur: ~d\n', [StaticScore]),
-	format('Score heuristique du joueur: ~d\n\n', [HeuristicScore]),
+	get_time(EndTime),
+	Time is EndTime - StartTime,
+	writeln('┏━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━┓'),
+	format('┃ Joueur: ~w (~w) ~21|┃ Position jouée: ~w ~43|┃ Durée du tour: ~3fs~69|┃\n', [PlayersName, PlayersSymbol, MoveID, Time]),
+	writeln('┣━━━━━━━━━━━━━━━━━━━━┻━━━━━━━━━━┳━━━━━━━━━━┻━━━━━━━━━━━━━━━━━━━━━━━━━┫'),
+	format('┃ Alignement le plus long: ~d ~32|┃ Score heuristique: ~d ~69|┃\n', [StaticScore, HeuristicScore]),
+	writeln('┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┻━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛'),
 	(
 		get_goal(Goal),
 		StaticScore >= Goal ->
@@ -245,15 +255,19 @@ welcome_screen :-
 	writeln(' Le but du jeu est de placer cinq pions consécutifs en ligne,'),
 	writeln(' horizontalement, verticalement ou en diagonale, sur le grillage.\n'),
 	writeln(' Chaque joueur place à tour de rôle un pion sur le plateau.'),
+	writeln(' Le joueur ayant les pions noirs débute la partie.'),
 	writeln(' Le premier joueur à atteindre 5 pions consécutifs gagne la partie.\n'),
-	draw_line,
-	writeln(' Voici les options disponibles:\n'),
-	writeln('  1 - Jouer à Gomoku sur un plateau 11×11.'),
-	writeln('  2 - Jouer à Gomoku sur un plateau 15×15.'),
-	writeln('  3 - Jouer à Gomoku sur un plateau 19×19.'),
-	writeln('  4 - Jouer à une version complètement paramétrable de Gomoku.'),
-	writeln('  5 - Jouer à Tic-Tac-Toe (Bonus).'),
-	writeln('  6 - Quitter.'),
+	writeln(' ╔══════════════════════════════════════════════════════════════════╗'),
+	writeln(' ║ Voici les options disponibles:                                   ║'),
+	writeln(' ║                                                                  ║'),
+	writeln(' ║ 1 - Jouer à Gomoku sur un plateau 11×11.                         ║'),
+	writeln(' ║ 2 - Jouer à Gomoku sur un plateau 15×15.                         ║'),
+	writeln(' ║ 3 - Jouer à Gomoku sur un plateau 19×19.                         ║'),
+	writeln(' ║ 4 - Jouer à une version complètement paramétrable de Gomoku.     ║'),
+	writeln(' ║ 5 - Jouer à Tic-Tac-Toe (Bonus).                                 ║'),
+	writeln(' ║ Q - Quitter.                                                     ║'),
+	writeln(' ║                                                                  ║'),
+	writeln(' ╚══════════════════════════════════════════════════════════════════╝'),
 	request_valid_integer(1, 6, '\nEntrez le numéro de l\'option choisie:', Selection),
 	switch(Selection, [
 		1 : gomoku(11),

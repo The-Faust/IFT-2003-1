@@ -17,7 +17,7 @@
 %====================================================%
 
 :- [src/game_components/board].
-:- [src/game_components/interface].
+:- [src/game_components/user_interface].
 
 :- begin_tests(board).
 

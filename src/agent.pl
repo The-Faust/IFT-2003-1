@@ -38,7 +38,7 @@ agent(Board, Player, Move) :-
 			% Algorithme Alpha-Bêta avec heuristique (profodeur de recherche limitée):
 			(
 				get_time(Time),
-				bounded_alphabeta(Board-LastPlayer-nil, -inf, inf, _-_-Move, _, 1, Time, 1.5)
+				bounded_alphabeta(Board-LastPlayer-nil, -inf, inf, _-_-Move, _, 1, Time, 10)
 			)
 		)
 	).
@@ -48,6 +48,7 @@ moves(Board-LastPlayer-_, PosList) :-
 	not(game_over(Board, _)),
 	% Récupère les cases non utilisées:
 	get_possible_moves(Board, PossibleMoves),
+	% Incorpore un peu d'aléatoire:
 	random_permutation(PossibleMoves, PossibleMovesShuffled),
 	% Détermine à qui le tour appartient:
 	other(Player, LastPlayer),
@@ -60,7 +61,7 @@ moves(Board-LastPlayer-_, PosList) :-
 
 % Évalue la valeur d'un état pour un joueur:
 staticval(Board-_-_, Value) :-
-	game_over(Board, Winner),
+	game_over(Board, Winner), !,
 	(
 		Winner = nil ->
 		Value is 0

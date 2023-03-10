@@ -18,7 +18,7 @@
 
 
 :- [src/game_components/board].
-:- [src/game_components/interface].
+:- [src/game_components/user_interface].
 :- [src/agent].
 
 :- begin_tests(bounded_alphabeta).
@@ -44,7 +44,8 @@ test(prevent_open_four) :-
 	get_time(TimeStamp),
 	TimeLimit is 1.5,
 
-	time(bounded_alphabeta(Pos, Alpha, Beta, GoodPos, Val, Depth, TimeStamp, TimeLimit)),
+	profile(bounded_alphabeta(Pos, Alpha, Beta, GoodPos, Val, Depth, TimeStamp, TimeLimit)),
+
 	GoodPos = _-_-MoveDone,
 	
 	IdealMove = 2-6,
@@ -74,7 +75,7 @@ test(prevent_closed_four) :-
 	get_time(TimeStamp),
 	TimeLimit is 1.5,
 
-	time(bounded_alphabeta(Pos, Alpha, Beta, GoodPos, Val, Depth, TimeStamp, TimeLimit)),
+	profile(bounded_alphabeta(Pos, Alpha, Beta, GoodPos, Val, Depth, TimeStamp, TimeLimit)),
 	GoodPos = _-_-MoveDone,
 	
 	IdealMove = 9-4,
@@ -104,7 +105,7 @@ test(prevent_semi3_four) :-
 	get_time(TimeStamp),
 	TimeLimit is 1.5,
 
-	time(bounded_alphabeta(Pos, Alpha, Beta, GoodPos, Val, Depth, TimeStamp, TimeLimit)),
+	profile(bounded_alphabeta(Pos, Alpha, Beta, GoodPos, Val, Depth, TimeStamp, TimeLimit)),
 	GoodPos = _-_-MoveDone,
 	
 	IdealMove = 9-3,
@@ -133,8 +134,8 @@ test(prevent_semi3_three) :-
 	Depth is 1,
 	get_time(TimeStamp),
 	TimeLimit is 1.5,
-	
-	time(bounded_alphabeta(Pos, Alpha, Beta, GoodPos, Val, Depth, TimeStamp, TimeLimit)),
+
+	profile(bounded_alphabeta(Pos, Alpha, Beta, GoodPos, Val, Depth, TimeStamp, TimeLimit)),
 	GoodPos = _-_-MoveDone,
 	
 	IdealMove = 4-3,
@@ -163,8 +164,8 @@ test(win_next_turn) :-
 	Depth is 1,
 	get_time(TimeStamp),
 	TimeLimit is 1.5,
-	
-	time(bounded_alphabeta(Pos, Alpha, Beta, GoodPos, Val, Depth, TimeStamp, TimeLimit)),
+
+	profile(bounded_alphabeta(Pos, Alpha, Beta, GoodPos, Val, Depth, TimeStamp, TimeLimit)),
 	GoodPos = _-_-MoveDone,
 	
 	IdealMove = 2-5,

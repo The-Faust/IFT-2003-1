@@ -14,8 +14,9 @@
 
 % Chargement des modules:
 :- [src/game_components/board].
-:- [src/game_components/interface].
+:- [src/game_components/user_interface].
 :- [src/agent].
+
 
 % Paramètres choisis par l'utilisateur:
 :- dynamic player/1. % Couleur de l'utilisateur.
@@ -45,21 +46,18 @@ begin_game(Firstplayer, Goal, BoardSize, Board) :-
 	set_goal(Goal),
 	create_gomoku_board(BoardSize, Board),
 	Firstplayer = n,
-	load_cache,
 	cls,
 	display_gomoku_board(Board).
 
 % Établi la routine de fin de partie:
 end_game :-
-	save_cache,
+	retractall(goal(_)),
 	request_continue_playing.
 
 % Établi un tour complet et boucle jusqu'à ce que le jeu termine:
 turn(Board, Player, NewBoard) :-
-	% Suivi de la durée d'un tour:
-	statistics(runtime, [Start|_]),
 	% Annonce le prochain tour:
-	introduce_turn(Player),
+	introduce_turn(Player, StartTime),
 	(   % Vérifie s'il reste un emplacement vide:
 		has_an_empty_cell(Board) ->
 		(
@@ -80,28 +78,8 @@ turn(Board, Player, NewBoard) :-
 		display_tie
 	),
 	% Conclu le tour:
-	conclude_turn(NewBoard-Player-Move, NextPlayer),
-	% Affiche les statistiques (temps écoulé):
-	statistics(runtime, [End|_]),
-	Time is (End - Start)/1000,
-	format('Le tour a pris: ~3f secondes.~n', [Time]),
+	conclude_turn(NewBoard-Player-Move, NextPlayer, StartTime),
 	% Récursion jusqu'à l'atteinte d'un état final:
 	turn(NewBoard, NextPlayer, _).
-
-% Permet de sauvegarder les calculs effectués:
-save_cache :-
-	tell('evaluations.cache'),
-	listing([memo_heuristic_score]),
-	told.
-
-% Permet de charger les calculs effectués:
-load_cache :-
-	exists_file('evaluations.cache') ->
-	(
-		retractall(memo_heuristic_score(_)),
-		consult('evaluations.cache')
-	)
-	;
-	true.
 
 :- initialization welcome_screen.

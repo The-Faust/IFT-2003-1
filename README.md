@@ -37,25 +37,25 @@ vous pouvez les lancer à l'aide des commandes suivantes :
 
 Pour le damier :
 ```ijprolog
-consult('src/tests/board.pl').
+consult('src/tests/board_tests.pl').
 run_tests.
 ```
 
 Pour l'algorithme alpha-beta :
 ```ijprolog
-consult('src/tests/board.pl').
+consult('src/tests/alphabeta_tests.pl').
 run_tests().
 ```
 
 Pour l'algorithme alpha-beta borné (ou encore avec contraintes) :
 ```ijprolog
-consult('src/tests/board.pl').
+consult('src/tests/bounded_alphabeta_tests.pl').
 run_tests.
 ```
 
 POur les tests associés à l'évaluation statique du score :
 ```ijprolog
-consult('src/tests/board.pl').
+consult('src/tests/static_evaluation_tests.pl').
 run_tests.
 ```
 

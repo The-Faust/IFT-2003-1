@@ -17,7 +17,7 @@
 %====================================================%
 
 
-:- [heuristic_evaluation].
+:- [src/game_components/heuristic_evaluation].
 
 :- begin_tests(heuristic_evaluation).
 
