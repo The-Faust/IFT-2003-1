@@ -22,61 +22,61 @@
 
 % L'agent choisit de jouer dans (Row, Col):
 agent(Board, Player, Move) :-
-	other(Player, LastPlayer),
-	(
-		% Vérifie s'il est possible de gagner sur ce tour:
-		winning_move(Board, Player, Move)
-		;
-		% Vérifie s'il est possible de perdre au prochain tour:
-		winning_move(Board, LastPlayer, Move)
-		;
-		(
-			length(Board, 3) ->
-			% Algorithme Alpha-Bêta:
-			alphabeta(Board-LastPlayer-nil, -inf, inf, _-_-Move, _)
-			;
-			% Algorithme Alpha-Bêta avec heuristique (profodeur de recherche limitée):
-			(
-				get_time(Time),
-				bounded_alphabeta(Board-LastPlayer-nil, -inf, inf, _-_-Move, _, 1, Time, 10)
-			)
-		)
-	).
+    other(Player, LastPlayer),
+    (
+        % Vérifie s'il est possible de gagner sur ce tour:
+        winning_move(Board, Player, Move)
+        ;
+        % Vérifie s'il est possible de perdre au prochain tour:
+        winning_move(Board, LastPlayer, Move)
+        ;
+        (
+            length(Board, 3) ->
+            % Algorithme Alpha-Bêta:
+            alphabeta(Board-LastPlayer-nil, -inf, inf, _-_-Move, _)
+            ;
+            % Algorithme Alpha-Bêta avec heuristique (profodeur de recherche limitée):
+            (
+                get_time(Time),
+                bounded_alphabeta(Board-LastPlayer-nil, -inf, inf, _-_-Move, _, 1, Time, 10)
+            )
+        )
+    ).
 
 % Établi les transitions possibles à partir d'un état:
 moves(Board-LastPlayer-_, PosList) :-
-	not(game_over(Board, _)),
-	% Récupère les cases non utilisées:
-	get_possible_moves(Board, PossibleMoves),
-	% Incorpore un peu d'aléatoire:
-	random_permutation(PossibleMoves, PossibleMovesShuffled),
-	% Détermine à qui le tour appartient:
-	other(Player, LastPlayer),
-	% Construit la liste des transitions possibles:
-	bagof(NewBoard-Player-Move,
-		(
-			member(Move, PossibleMovesShuffled),
-			make_a_move(Board, Player, Move, NewBoard)
-		), PosList).
+    not(game_over(Board, _)),
+    % Récupère les cases non utilisées:
+    get_possible_moves(Board, PossibleMoves),
+    % Incorpore un peu d'aléatoire:
+    random_permutation(PossibleMoves, PossibleMovesShuffled),
+    % Détermine à qui le tour appartient:
+    other(Player, LastPlayer),
+    % Construit la liste des transitions possibles:
+    bagof(NewBoard-Player-Move,
+        (
+            member(Move, PossibleMovesShuffled),
+            make_a_move(Board, Player, Move, NewBoard)
+        ), PosList).
 
 % Évalue la valeur d'un état pour un joueur:
 staticval(Board-_-_, Value) :-
-	game_over(Board, Winner), !,
-	(
-		Winner = nil ->
-		Value is 0
-		;
-		(
-			Winner = n ->
-			Value is 1
-			;
-			Value is -1
-		)
-	).
+    game_over(Board, Winner), !,
+    (
+        Winner = nil ->
+        Value is 0
+        ;
+        (
+            Winner = n ->
+            Value is 1
+            ;
+            Value is -1
+        )
+    ).
 
 % Évalue la valeur heurisitique d'un état pour un joueur:
 heuristicval(Pos, Value) :-
-	heuristic_score(Pos, Value), !.
+    heuristic_score(Pos, Value), !.
 
 % Établi à qui appartient le tour:
 min_to_move(_-n-_).   % -> au joueur blanc (il est précédé par le joueur noir).
