@@ -13,9 +13,10 @@
 :- set_prolog_flag(verbose, silent).
 
 % Chargement des modules:
-:- [board].
-:- [user_interface].
-:- [agent].
+:- [src/game_components/board].
+:- [src/game_components/user_interface].
+:- [src/agent].
+
 
 % Paramètres choisis par l'utilisateur:
 :- dynamic player/1. % Couleur de l'utilisateur.

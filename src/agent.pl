@@ -15,10 +15,10 @@
 %====================================================%
 
 
-:- [heuristic_evaluation].
-:- [minimax].
-:- [alphabeta].
-:- [bounded_alphabeta].
+:- [src/game_components/heuristic_evaluation].
+:- [src/algorithms/minimax].
+:- [src/algorithms/alphabeta].
+:- [src/algorithms/bounded_alphabeta].
 
 % L'agent choisit de jouer dans (Row, Col):
 agent(Board, Player, Move) :-

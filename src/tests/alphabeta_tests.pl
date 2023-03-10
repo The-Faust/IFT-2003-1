@@ -17,9 +17,9 @@
 %====================================================%
 
 
-:- [board].
-:- [user_interface].
-:- [agent].
+:- [src/game_components/board].
+:- [src/game_components/user_interface].
+:- [src/agent].
 
 :- begin_tests(alphabeta).
 

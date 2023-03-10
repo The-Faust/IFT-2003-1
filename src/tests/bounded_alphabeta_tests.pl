@@ -12,14 +12,14 @@
 
 %====================================================%
 %    Tests unitaires pour bounded_alphabeta.pl.      %
-%                                                    %
-%    Exécuter les tests: ?- run_tests.               %
+%                                          		     %
+%    Exécuter les tests: ?- run_tests.     		     %
 %====================================================%
 
 
-:- [board].
-:- [user_interface].
-:- [agent].
+:- [src/game_components/board].
+:- [src/game_components/user_interface].
+:- [src/agent].
 
 :- begin_tests(bounded_alphabeta).
 
@@ -45,6 +45,7 @@ test(prevent_open_four) :-
 	TimeLimit is 1.5,
 
 	profile(bounded_alphabeta(Pos, Alpha, Beta, GoodPos, Val, Depth, TimeStamp, TimeLimit)),
+
 	GoodPos = _-_-MoveDone,
 	
 	IdealMove = 2-6,
@@ -133,7 +134,7 @@ test(prevent_semi3_three) :-
 	Depth is 1,
 	get_time(TimeStamp),
 	TimeLimit is 1.5,
-	
+
 	profile(bounded_alphabeta(Pos, Alpha, Beta, GoodPos, Val, Depth, TimeStamp, TimeLimit)),
 	GoodPos = _-_-MoveDone,
 	
@@ -163,7 +164,7 @@ test(win_next_turn) :-
 	Depth is 1,
 	get_time(TimeStamp),
 	TimeLimit is 1.5,
-	
+
 	profile(bounded_alphabeta(Pos, Alpha, Beta, GoodPos, Val, Depth, TimeStamp, TimeLimit)),
 	GoodPos = _-_-MoveDone,
 	

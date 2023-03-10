@@ -16,7 +16,7 @@
 
 
 :- [board].
-:- [bounded_alphabeta].
+:- [src/algorithms/bounded_alphabeta].
 
 % Identifiants du joueur:
 players_name(n, 'noir').    % Joueur noir (n).
@@ -132,9 +132,7 @@ request_cell_coordinates(Board, Row-Col) :-
 			catch(number_chars(Row1, RowChars), _, false),
 			Col is Code - 65,
 			Row is Row1 - 1,
-			are_valid_coordinates(Board, Row-Col) ->
-			true
-			;
+			are_valid_coordinates(Board, Row-Col) -> true;
 			writeln('Vous devez choisir une case valide!'),
 			fail
 		)
