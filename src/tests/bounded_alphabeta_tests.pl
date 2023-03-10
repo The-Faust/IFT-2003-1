@@ -11,7 +11,7 @@
 %   Hiver 2023
 
 %====================================================%
-%    Tests unitaires pour bounded_alphabeta.pl.    %
+%    Tests unitaires pour bounded_alphabeta.pl.      %
 %                                          		     %
 %    Exécuter les tests: ?- run_tests.     		     %
 %====================================================%

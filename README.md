@@ -1,4 +1,31 @@
 # IFT-2003-1
+<pre>
+        ██████   ██████  ███    ███  ██████  ██   ██ ██    ██
+       ██       ██    ██ ████  ████ ██    ██ ██  ██  ██    ██
+       ██   ███ ██    ██ ██ ████ ██ ██    ██ █████   ██    ██
+       ██    ██ ██    ██ ██  ██  ██ ██    ██ ██  ██  ██    ██
+        ██████   ██████  ██      ██  ██████  ██   ██  ██████ 
+
+Bienvenu dans Gomoku!  
+Gomoku est un jeu de stratégie pour deux joueurs.  
+Le but du jeu est de placer cinq pions consécutifs en ligne  
+horizontalement, verticalement ou en diagonale, sur le grillage  
+Chaque joueur place à tour de rôle un pion sur le plateau.  
+Le joueur ayant les pions noirs débute la partie.  
+Le premier joueur à atteindre 5 pions consécutifs gagne la partie.  
+
+╔══════════════════════════════════════════════════════════════════╗  
+║ Voici les options disponibles:                                   ║  
+║                                                                  ║  
+║ 1 - Jouer à Gomoku sur un plateau 11×11.                         ║  
+║ 2 - Jouer à Gomoku sur un plateau 15×15.                         ║  
+║ 3 - Jouer à Gomoku sur un plateau 19×19.                         ║  
+║ 4 - Jouer à une version complètement paramétrable de Gomoku.     ║  
+║ 5 - Jouer à Tic-Tac-Toe (Bonus).                                 ║  
+║ Q - Quitter.                                                     ║  
+║                                                                  ║  
+╚══════════════════════════════════════════════════════════════════╝  
+</pre>
 
 ## À propos du projet
 Le but de ce code est d'explorer different algorithmes et heuritiques afin de gagner une partie du jeu de gomoku.
@@ -37,7 +64,7 @@ vous pouvez les lancer à l'aide des commandes suivantes :
 
 Pour le damier :
 ```ijprolog
-consult('src/tests/board_tests.pl').
+consult('src/tests/heuristic_evaluation_tests.pl').
 run_tests.
 ```
 
@@ -58,7 +85,3 @@ POur les tests associés à l'évaluation statique du score :
 consult('src/tests/static_evaluation_tests.pl').
 run_tests.
 ```
-
-### Pour générer des statistiques sur les scores
-Il est possible de faire jouer deux agents l'un contre l'autre. lorsque vous ex/cutez cette commande un fichier évaluation.cache est produit. ce fichier contient le score statique, le score heuristique et l'identifiant des joueurs à chaque tours. Vous pouvez vous servir de ces donnés afin d'évaluer la performance de diverse configuration selon divers damiers. 
-
