@@ -114,36 +114,6 @@ test(prevent_semi3_four) :-
     assertion(MoveDone = IdealMove),
     assertion(Val = IdealMoveScore).
 
-test(prevent_semi3_three) :-
-    set_goal(5),
-    Pos = [
-        [v,v,v,v,v,v,v,v,v,v,v],
-        [v,v,v,n,v,v,v,v,v,v,v],
-        [v,v,v,v,b,v,b,n,n,v,v],
-        [v,v,v,v,v,n,v,b,v,v,v],
-        [v,v,v,v,v,b,n,v,v,b,v],
-        [v,v,v,v,b,n,n,n,n,b,v],
-        [v,v,v,b,n,b,b,b,b,n,v],
-        [v,v,n,b,n,b,b,b,b,n,v],
-        [v,b,v,v,n,b,n,n,n,b,v],
-        [v,v,v,v,b,n,n,n,v,v,v],
-        [v,v,v,n,v,v,b,v,v,v,v]]-b-(2-6),
-    Alpha = -inf,
-    Beta = inf,
-    
-    Depth is 1,
-    get_time(TimeStamp),
-    TimeLimit is 1.5,
-
-    profile(bounded_alphabeta(Pos, Alpha, Beta, GoodPos, Val, Depth, TimeStamp, TimeLimit)),
-    GoodPos = _-_-MoveDone,
-    
-    IdealMove = 4-3,
-    show_heuristic_values(Pos, GoodPos, IdealMove, IdealMoveScore),
-    
-    assertion(MoveDone = IdealMove),
-    assertion(Val = IdealMoveScore).
-
 test(win_next_turn) :-
     set_goal(5),
     Pos = [

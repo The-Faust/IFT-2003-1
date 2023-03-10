@@ -51,11 +51,11 @@ sum_score(Player, PS, [S1-N1, S2-N2, S3-N3|Rest], PreviousScore, Score) :-
                 ;
                 is_a_closed_row(Goal, PS, S1-N1, S2-N2, S3-N3, NS), value(closed, N2, Value), Playing = S2
                 ;
-                is_a_semi_opened_row_3(Goal, PS, S1-N1, S2-N2, S3-N3, NS), N is N1 + N3, value(semi_opened3, N, Value), Playing = S1
+                is_a_semi_opened_row_3(Goal, PS, S1-N1, S2-N2, S3-N3, NS), value(semi_opened3, Goal, Value), Playing = S1
                 ;
-                is_a_semi_opened_row_2(Goal, PS, S1-N1, S2-N2, S3-N3, NS), N is N1 + N3, value(semi_opened2, N, Value), Playing = S1
+                is_a_semi_opened_row_2(Goal, PS, S1-N1, S2-N2, S3-N3, NS), value(semi_opened2, Goal, Value), Playing = S1
                 ;
-                is_a_semi_opened_row_1(Goal, PS, S1-N1, S2-N2, S3-N3, NS), N is N1 + N3, value(semi_opened1, N, Value), Playing = S1
+                is_a_semi_opened_row_1(Goal, PS, S1-N1, S2-N2, S3-N3, NS), value(semi_opened1, Goal, Value), Playing = S1
             ),
             players_sign(Playing, Sign),
             advantage(Playing, Player, Factor),
@@ -90,6 +90,6 @@ is_a_semi_opened_row_1(Goal, PS, P-N1, v-1, P-N3, NS) :- member(P, [b, n]), dif(
 value(win, N, Value) :-          Value is 3 * 10**(N - 1), !.
 value(opened, N, Value) :-       Value is 3 * 10**(N - 1), !.
 value(closed, N, Value) :-       Value is 1 * 10**(N - 1), !.
-value(semi_opened3, N, Value) :- Value is 2 * 10**(N - 1), !.
-value(semi_opened2, N, Value) :- Value is 8 * 10**(N - 2), !.
-value(semi_opened1, N, Value) :- Value is 5 * 10**(N - 2), !.
+value(semi_opened3, N, Value) :- Value is 4 * 10**(N - 2), !.
+value(semi_opened2, N, Value) :- Value is 2 * 10**(N - 2), !.
+value(semi_opened1, N, Value) :- Value is 1 * 10**(N - 2), !.
