@@ -15,10 +15,10 @@
 %====================================================%
 
 
-:- [heuristic_evaluation].
-:- [minimax].
-:- [alphabeta].
-:- [alphabeta_heuristic].
+:- [src/game_components/heuristic_evaluation].
+:- [src/algorithms/minimax].
+:- [src/algorithms/alphabeta].
+:- [src/algorithms/bounded_alphabeta].
 
 % L'agent choisit de jouer dans (Row, Col):
 agent(Board, Player, Move) :-
@@ -38,7 +38,7 @@ agent(Board, Player, Move) :-
 			% Algorithme Alpha-Bêta avec heuristique (profodeur de recherche limitée):
 			(
 				get_time(Time),
-				alphabeta_heuristic(Board-LastPlayer-nil, -inf, inf, _-_-Move, _, 1, Time, 1.5)
+				bounded_alphabeta(Board-LastPlayer-nil, -inf, inf, _-_-Move, _, 1, Time, 1.5)
 			)
 		)
 	).

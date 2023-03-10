@@ -11,17 +11,17 @@
 %   Hiver 2023
 
 %====================================================%
-%    Tests unitaires pour alphabeta_heuristic.pl.    %
+%    Tests unitaires pour bounded_alphabeta.pl.    %
 %                                          		     %
 %    Exécuter les tests: ?- run_tests.     		     %
 %====================================================%
 
 
-:- [board].
-:- [interface].
-:- [agent].
+:- [src/game_components/board].
+:- [src/game_components/interface].
+:- [src/agent].
 
-:- begin_tests(alphabeta_heuristic).
+:- begin_tests(bounded_alphabeta).
 
 test(prevent_open_four) :-
 	set_goal(5),
@@ -44,7 +44,7 @@ test(prevent_open_four) :-
 	get_time(TimeStamp),
 	TimeLimit is 1.5,
 
-	time(alphabeta_heuristic(Pos, Alpha, Beta, GoodPos, Val, Depth, TimeStamp, TimeLimit)),
+	time(bounded_alphabeta(Pos, Alpha, Beta, GoodPos, Val, Depth, TimeStamp, TimeLimit)),
 	GoodPos = _-_-MoveDone,
 	
 	IdealMove = 2-6,
@@ -74,7 +74,7 @@ test(prevent_closed_four) :-
 	get_time(TimeStamp),
 	TimeLimit is 1.5,
 
-	time(alphabeta_heuristic(Pos, Alpha, Beta, GoodPos, Val, Depth, TimeStamp, TimeLimit)),
+	time(bounded_alphabeta(Pos, Alpha, Beta, GoodPos, Val, Depth, TimeStamp, TimeLimit)),
 	GoodPos = _-_-MoveDone,
 	
 	IdealMove = 9-4,
@@ -104,7 +104,7 @@ test(prevent_semi3_four) :-
 	get_time(TimeStamp),
 	TimeLimit is 1.5,
 
-	time(alphabeta_heuristic(Pos, Alpha, Beta, GoodPos, Val, Depth, TimeStamp, TimeLimit)),
+	time(bounded_alphabeta(Pos, Alpha, Beta, GoodPos, Val, Depth, TimeStamp, TimeLimit)),
 	GoodPos = _-_-MoveDone,
 	
 	IdealMove = 9-3,
@@ -134,7 +134,7 @@ test(prevent_semi3_three) :-
 	get_time(TimeStamp),
 	TimeLimit is 1.5,
 	
-	time(alphabeta_heuristic(Pos, Alpha, Beta, GoodPos, Val, Depth, TimeStamp, TimeLimit)),
+	time(bounded_alphabeta(Pos, Alpha, Beta, GoodPos, Val, Depth, TimeStamp, TimeLimit)),
 	GoodPos = _-_-MoveDone,
 	
 	IdealMove = 4-3,
@@ -164,7 +164,7 @@ test(win_next_turn) :-
 	get_time(TimeStamp),
 	TimeLimit is 1.5,
 	
-	time(alphabeta_heuristic(Pos, Alpha, Beta, GoodPos, Val, Depth, TimeStamp, TimeLimit)),
+	time(bounded_alphabeta(Pos, Alpha, Beta, GoodPos, Val, Depth, TimeStamp, TimeLimit)),
 	GoodPos = _-_-MoveDone,
 	
 	IdealMove = 2-5,
@@ -173,7 +173,7 @@ test(win_next_turn) :-
 	assertion(MoveDone = IdealMove),
 	assertion(Val = IdealMoveScore).
 	
-:- end_tests(alphabeta_heuristic).
+:- end_tests(bounded_alphabeta).
 
 % Affiche la position jouée et celle désirée avec leur score respectif:
 show_heuristic_values(Board-_-_, MoveDoneBoard-Player-MoveDone, IdealMove, IdealMoveScore) :-

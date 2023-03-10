@@ -17,7 +17,7 @@
 %====================================================%
 
 
-:- [static_evaluation].
+:- [src/game_components/static_evaluation].
 
 :- begin_tests(evaluation).
 

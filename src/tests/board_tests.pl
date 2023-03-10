@@ -16,8 +16,8 @@
 %    Exécuter les tests: ?- run_tests.               %
 %====================================================%
 
-:- [board].
-:- [interface].
+:- [src/game_components/board].
+:- [src/game_components/interface].
 
 :- begin_tests(board).
 
