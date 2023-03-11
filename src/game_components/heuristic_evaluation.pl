@@ -15,8 +15,8 @@
 %====================================================%
 
 
-:- [board].
-:- [static_evaluation].
+:- [src/game_components/board].
+:- [src/game_components/static_evaluation].
 
 % Le joueur noir maximise, le joueur blanc minimise:
 players_sign(n, 1) :- !.

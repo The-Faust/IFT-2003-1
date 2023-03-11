@@ -15,8 +15,12 @@
 %====================================================%
 
 
-:- [board].
+:- [src/game_components/board].
 :- [src/algorithms/bounded_alphabeta].
+:- [src/helpers/helpers].
+
+use_module(library(csv)).
+
 
 % Identifiants du joueur:
 players_name(n, 'noir').    % Joueur noir (n).
@@ -166,7 +170,7 @@ introduce_turn(Player, StartTime) :-
     get_time(StartTime).
 
 % Affiche le résultat du tour qui termine:
-conclude_turn(NewBoard-Player-Move, NextPlayer, StartTime) :-
+conclude_turn(NewBoard-Player-Move, NextPlayer, StartTime, Data, X) :-
     other(Player, NextPlayer),
     display_gomoku_board(NewBoard),
     static_score(NewBoard, Player, StaticScore),
@@ -176,6 +180,7 @@ conclude_turn(NewBoard-Player-Move, NextPlayer, StartTime) :-
     coordinates_to_id(Move, MoveID),
     get_time(EndTime),
     Time is EndTime - StartTime,
+    append(Data, [row(PlayersName, MoveID, Time, StaticScore, HeuristicScore)], X),
     writeln('┏━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━┓'),
     format('┃ Joueur: ~w (~w) ~21|┃ Position jouée: ~w ~43|┃ Durée du tour: ~3fs~69|┃\n', [PlayersName, PlayersSymbol, MoveID, Time]),
     writeln('┣━━━━━━━━━━━━━━━━━━━━┻━━━━━━━━━━┳━━━━━━━━━━┻━━━━━━━━━━━━━━━━━━━━━━━━━┫'),
@@ -185,6 +190,7 @@ conclude_turn(NewBoard-Player-Move, NextPlayer, StartTime) :-
         get_goal(Goal),
         StaticScore >= Goal ->
         (
+            csv_write_file('games.csv', X),
             draw_line,
             writeln('\n                  ╔════════════════════════════╗'),
             format('                  ║ Le joueur ~w (~w) gagne! ~47|║\n', [PlayersName, PlayersSymbol]),

@@ -1,3 +1,6 @@
 .idea
 .DS_Store
 *.cache
+*.csv
+
+*.ipynb_checkpoints
