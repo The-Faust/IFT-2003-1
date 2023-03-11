@@ -17,7 +17,7 @@
 %====================================================%
 
 
-:- [src/game_components/heuristic_evaluation].
+:- ['../game_components/game_engine'].
 
 :- begin_tests(heuristic_evaluation).
 
@@ -170,3 +170,4 @@ check_line_score(Line, Player, Score) :-
     clumped(LineList, RLE),
     sum_score(Player, RLE, Score),
     format('Line = ~w, Player = ~w, Score = ~w\n', [Line, Player, Score]).
+    

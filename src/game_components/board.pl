@@ -15,10 +15,6 @@
 %====================================================%
 
 
-% Prédicat qui permet d'alterner les joeurs:
-other(b, n).
-other(n, b).
-
 % Créer un plateau de jeu vierge de dimensions N×N:
 create_gomoku_board(N, Board) :-
     length(Board, N),

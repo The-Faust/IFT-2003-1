@@ -17,9 +17,7 @@
 %====================================================%
 
 
-:- [src/game_components/board].
-:- [src/game_components/user_interface].
-:- [src/agent].
+:- ['../game_components/game_engine'].
 
 :- begin_tests(bounded_alphabeta).
 
@@ -157,3 +155,4 @@ show_heuristic_values(Board-_-_, MoveDoneBoard-Player-MoveDone, IdealMove, Ideal
     coordinates_to_id(IdealMove, IM_ID),
     format('Position idéale: ~w;  Valeur heuristique: ~w~n', [IM_ID, IdealMoveScore]),
     display_gomoku_board(IdealMoveBoard).
+    
