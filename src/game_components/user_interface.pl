@@ -15,9 +15,6 @@
 %====================================================%
 
 
-:- [board].
-:- [src/algorithms/bounded_alphabeta].
-
 % Identifiants du joueur:
 players_name(n, 'noir').    % Joueur noir (n).
 players_name(b, 'blanc').   % Joueur blanc (b).

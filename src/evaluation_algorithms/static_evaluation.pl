@@ -15,8 +15,6 @@
 %====================================================%
 
 
-:- [board].
-
 :- dynamic goal/1. % Nombre de pions à aligner pour gagner.
 
 % Assigne un but (nombre de pions à aligner):
