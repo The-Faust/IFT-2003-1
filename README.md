@@ -85,3 +85,15 @@ POur les tests associés à l'évaluation statique du score :
 consult('src/tests/static_evaluation_tests.pl').
 run_tests.
 ```
+
+### Analyse
+Dans le devoir il est demand/ de faire le jeu en prolog, mais l<analyse peut être faite dans le langage de notre choix ;)
+
+C'est pourquoi l'analyse est faite dans un jupyter notebook
+
+Pour installer l'environnement:
+```
+conda env create -f analysis/ia_course_hw_1_env.yml
+```
+
+Puis allez dans le dossier d'analyse dans votre terminal et lancer jupyterlab!
