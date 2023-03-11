@@ -97,3 +97,4 @@ conda env create -f analysis/ia_course_hw_1_env.yml
 ```
 
 Puis allez dans le dossier d'analyse dans votre terminal et lancer jupyterlab!
+la commande est `jupyter-lab`
