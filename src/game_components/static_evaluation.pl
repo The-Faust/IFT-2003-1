@@ -15,7 +15,7 @@
 %====================================================%
 
 
-:- [board].
+:- [src/game_components/board].
 
 :- dynamic goal/1. % Nombre de pions à aligner pour gagner.
 
